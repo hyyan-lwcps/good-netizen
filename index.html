@@ -8,6 +8,9 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js 實時圖表 -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Firebase Realtime Database SDK (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
     body {
@@ -711,6 +714,37 @@
 
   <!-- ==================== JavaScript 邏輯 ==================== -->
   <script>
+    // Firebase 專案配置 (Realtime Database 實時同步)
+    const firebaseConfig = {
+      apiKey: "AIzaSyDPZF0Jx5uDwZdVsyU69JiEPF4F3E2Ld_k",
+      authDomain: "good-netizen.firebaseapp.com",
+      databaseURL: "https://good-netizen-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "good-netizen",
+      storageBucket: "good-netizen.firebasestorage.app",
+      messagingSenderId: "1008017925122",
+      appId: "1:1008017925122:web:3d5a1554e89cf43b74b31b"
+    };
+
+    let fbDatabase = null;
+    let fbDataRef = null;
+    let fbStageRef = null;
+    let isFirebaseReady = false;
+    let cachedFirebaseData = {};
+
+    // 初始化 Firebase 連線
+    try {
+      if (typeof firebase !== 'undefined') {
+        firebase.initializeApp(firebaseConfig);
+        fbDatabase = firebase.database();
+        fbDataRef = fbDatabase.ref('p2_ict_data');
+        fbStageRef = fbDatabase.ref('p2_ict_unlock_stage');
+        isFirebaseReady = true;
+      }
+    } catch (err) {
+      console.warn("Firebase 初始化失敗，降級使用 LocalStorage:", err);
+      isFirebaseReady = false;
+    }
+
     const ANIMALS = [
       { id: 1, name: "樹熊組", emoji: "🐨" },
       { id: 2, name: "獅子組", emoji: "🦁" },
@@ -739,7 +773,6 @@
       { key: "threat", label: "發佈恐嚇言論", emoji: "🎁" }
     ];
 
-    // 精確根據便條紙圖片與要求更新：學生端法律警示 + 教師專區真實案件簡述與導引
     const LAW_INFO = {
       unit1: {
         title: "⚖️ 情境 1 法律警示：網絡欺凌與私隱",
@@ -773,8 +806,11 @@
     let currentUnlockStage = 1;
     let chainSelectedOptions = { act1: null, act2: null, act3: null };
 
-    // 本地 Try-Catch 讀寫保護
+    // 本地與網絡雙重存取保護
     function safeGetStorage(key, defaultVal = {}) {
+      if (isFirebaseReady && key === 'p2_ict_data' && Object.keys(cachedFirebaseData).length > 0) {
+        return cachedFirebaseData;
+      }
       try {
         const val = localStorage.getItem(key);
         return val ? JSON.parse(val) : defaultVal;
@@ -792,6 +828,18 @@
       }
     }
 
+    // 數據同步至 Firebase
+    function syncToFirebase(path, data) {
+      safeSetStorage(path === 'p2_ict_unlock_stage' ? 'p2_ict_unlock_stage' : 'p2_ict_data', data);
+      if (isFirebaseReady) {
+        if (path === 'p2_ict_unlock_stage') {
+          fbStageRef.set(data);
+        } else {
+          fbDataRef.set(data);
+        }
+      }
+    }
+
     window.onload = function() {
       initAnimalGrid();
       initChainChoiceGrids();
@@ -803,9 +851,25 @@
         loadSavedGroup();
       }
 
-      const savedStage = parseInt(safeGetStorage('p2_ict_unlock_stage', 1));
-      applyUnlockStageUI(savedStage);
-      updateDashboard();
+      // 監聽 Firebase 實時數據更新 (跨裝置同步)
+      if (isFirebaseReady) {
+        fbDataRef.on('value', (snapshot) => {
+          const data = snapshot.val() || {};
+          cachedFirebaseData = data;
+          safeSetStorage('p2_ict_data', data);
+          updateDashboard();
+          updateStudentUIStatus();
+        });
+
+        fbStageRef.on('value', (snapshot) => {
+          const stage = snapshot.val() || 1;
+          applyUnlockStageUI(parseInt(stage));
+        });
+      } else {
+        const savedStage = parseInt(safeGetStorage('p2_ict_unlock_stage', 1));
+        applyUnlockStageUI(savedStage);
+        updateDashboard();
+      }
 
       window.addEventListener('storage', function(e) {
         if (e.key === 'p2_ict_data') {
@@ -984,11 +1048,11 @@
 
     function teacherSetUnlockStage(stage) {
       currentUnlockStage = stage;
-      safeSetStorage('p2_ict_unlock_stage', stage.toString());
+      syncToFirebase('p2_ict_unlock_stage', stage);
       applyUnlockStageUI(stage);
       
       const stageNames = { 1: '情境 1', 2: '情境 2', 3: '情境 3', 4: '情境 4', 5: '小強故事大挑戰' };
-      showAlert('🔓', '進度已發佈', `成功解鎖至【${stageNames[stage]}】！學生端畫面已同步解鎖。`);
+      showAlert('🔓', '進度已發佈', `成功解鎖至【${stageNames[stage]}】！全班學生端已即時同步解鎖。`);
     }
 
     function applyUnlockStageUI(stage) {
@@ -1027,7 +1091,8 @@
         db[currentGroup.id] = { animal: currentGroup };
       }
       db[currentGroup.id][unitKey] = choice;
-      safeSetStorage('p2_ict_data', db);
+
+      syncToFirebase('p2_ict_data', db);
 
       updateStudentUIStatus();
       updateDashboard();
@@ -1071,7 +1136,7 @@
       }
 
       db[currentGroup.id]['chain'] = { ...chainSelectedOptions };
-      safeSetStorage('p2_ict_data', db);
+      syncToFirebase('p2_ict_data', db);
 
       updateStudentUIStatus();
       updateDashboard();
@@ -1096,7 +1161,7 @@
 
       db[currentGroup.id]['pledged'] = true;
       db[currentGroup.id]['pledgeTime'] = timeStr;
-      safeSetStorage('p2_ict_data', db);
+      syncToFirebase('p2_ict_data', db);
 
       updateStudentUIStatus();
       updateDashboard();
@@ -1127,6 +1192,12 @@
 
     function executeResetData() {
       localStorage.removeItem('p2_ict_data');
+      cachedFirebaseData = {};
+      if (isFirebaseReady) {
+        fbDataRef.remove();
+        fbStageRef.set(1);
+      }
+
       closeConfirmModal();
       
       chainSelectedOptions = { act1: null, act2: null, act3: null };
@@ -1292,7 +1363,6 @@
         detailsContainer.appendChild(createGroupCategoryCard('選項 A (未符合/玩笑)', groupsA, 'border-red-200 bg-red-50/50', 'text-red-700'));
         detailsContainer.appendChild(createGroupCategoryCard('選項 B (正確/守法)', groupsB, 'border-emerald-200 bg-emerald-50/50', 'text-emerald-700'));
 
-        // 增設「⚖️ 法律警示」、「📋 案件簡述」與「🎯 課堂導引」卡片 (無「學生端收到的警告」字眼)
         if (LAW_INFO[activeTab]) {
           const lawAndCaseCard = document.createElement('div');
           lawAndCaseCard.className = "col-span-full space-y-4 pt-2";
@@ -1511,7 +1581,7 @@
           pledgeTime: isPledged ? '10:15' : null
         };
       }
-      localStorage.setItem('p2_ict_data', JSON.stringify(mockDb));
+      syncToFirebase('p2_ict_data', mockDb);
       updateDashboard();
       updateStudentUIStatus();
       showAlert('✅', '數據填入完成', '已成功填入 11 組模擬學生數據！包含情境 1-4、小強故事拆解及全班自律承諾簽署進度。');
