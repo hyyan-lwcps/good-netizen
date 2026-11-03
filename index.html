@@ -183,33 +183,33 @@
       <div class="text-4xl hidden sm:block">🌟</div>
     </div>
 
-    <!-- 📌 學生端四大步驟導航頁籤 -->
+    <!-- 📌 學生端四大階段導航頁籤 -->
     <nav class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-200/80 p-1.5 rounded-2xl border border-slate-300">
       <button onclick="switchStudentStep(1)" id="step-nav-1" class="step-nav-btn step-active py-3 px-2 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center space-x-1 transition cursor-pointer">
-        <span>📌 步驟一</span>
+        <span>📌 複習</span>
         <span class="hidden md:inline">：舊知溫故</span>
       </button>
       <button onclick="switchStudentStep(2)" id="step-nav-2" class="step-nav-btn bg-white text-slate-600 hover:text-slate-900 py-3 px-2 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center space-x-1 transition cursor-pointer">
-        <span>🎭 步驟二</span>
+        <span>🎮 活動一</span>
         <span class="hidden md:inline">：4大情境</span>
       </button>
       <button onclick="switchStudentStep(3)" id="step-nav-3" class="step-nav-btn bg-white text-slate-600 hover:text-slate-900 py-3 px-2 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center space-x-1 transition cursor-pointer">
-        <span>🎯 步驟三</span>
+        <span>🎯 活動二</span>
         <span class="hidden md:inline">：小強故事</span>
       </button>
       <button onclick="switchStudentStep(4)" id="step-nav-4" class="step-nav-btn bg-white text-slate-600 hover:text-slate-900 py-3 px-2 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center space-x-1 transition cursor-pointer">
-        <span>✍️ 步驟四</span>
+        <span>✍️ 總結</span>
         <span class="hidden md:inline">：自律承諾</span>
       </button>
     </nav>
 
-    <!-- ==================== 步驟一：舊知溫故 ==================== -->
+    <!-- ==================== 複習：舊知溫故 ==================== -->
     <section id="student-step-1" class="student-step-panel space-y-6">
       <div class="bg-white rounded-3xl p-6 shadow-sm border-2 border-slate-200 space-y-5">
         <div class="flex items-center space-x-3 border-b pb-3 border-slate-100">
           <span class="text-3xl">💡</span>
           <div>
-            <h3 class="text-xl font-black text-slate-800">步驟一：舊知溫故（上節課學過了什麼？）</h3>
+            <h3 class="text-xl font-black text-slate-800">複習：舊知溫故（上節課學過了什麼？）</h3>
             <p class="text-xs text-slate-500">複習我們已經學過的兩個良好網上公民守律：</p>
           </div>
         </div>
@@ -249,17 +249,17 @@
 
         <div class="pt-4 text-right">
           <button onclick="switchStudentStep(2)" class="bg-blue-600 hover:bg-blue-700 text-white font-black px-6 py-3 rounded-2xl shadow-md transition active:scale-95 text-base cursor-pointer">
-            溫故完成！進入 步驟二：4大情境抉擇 ➔
+            溫故完成！進入 活動一：4大情境執擇 ➔
           </button>
         </div>
       </div>
     </section>
 
-    <!-- ==================== 步驟二：4 大網絡情境抉擇 ==================== -->
+    <!-- ==================== 活動一：4 大網絡情境抉擇 ==================== -->
     <section id="student-step-2" class="student-step-panel space-y-6 hidden">
       <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200 space-y-3">
         <div class="flex items-center space-x-2">
-          <span class="bg-blue-600 text-white font-black px-3 py-1 rounded-xl text-xs sm:text-sm">步驟二</span>
+          <span class="bg-blue-600 text-white font-black px-3 py-1 rounded-xl text-xs sm:text-sm">活動一</span>
           <h3 class="text-lg sm:text-xl font-black text-slate-800">4 大網絡情境抉擇</h3>
         </div>
 
@@ -416,27 +416,27 @@
       <!-- 下一步按鈕 -->
       <div class="flex justify-between items-center pt-2">
         <button onclick="switchStudentStep(1)" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-2xl text-sm cursor-pointer">
-          ⬅️ 返回步驟一
+          ⬅️ 返回複習
         </button>
         <button onclick="switchStudentStep(3)" class="bg-blue-600 hover:bg-blue-700 text-white font-black px-6 py-3 rounded-2xl shadow-md transition active:scale-95 text-base cursor-pointer">
-          進入 步驟三：小強故事大挑戰 ➔
+          完成情境！進入 活動二：小強故事 ➔
         </button>
       </div>
     </section>
 
-    <!-- ==================== 步驟三：小強故事大挑戰 ==================== -->
+    <!-- ==================== 活動二：小強故事大挑戰 ==================== -->
     <section id="student-step-3" class="student-step-panel relative bg-white rounded-3xl p-6 shadow-lg border-2 border-indigo-200 space-y-6 overflow-hidden hidden">
       
       <!-- 🔒 故事大挑戰鎖定遮罩牆 -->
       <div id="lock-overlay-scenario-chain" class="absolute inset-0 z-20 lock-overlay flex flex-col items-center justify-center text-center p-6 space-y-3">
         <div class="text-5xl animate-bounce">🔒</div>
-        <h4 class="text-2xl font-black text-slate-800">小強故事大挑戰鎖定中</h4>
-        <p class="text-slate-600 text-sm max-w-md font-medium">請專心聆聽老師講解，待老師開啟此情境。</p>
+        <h4 class="text-2xl font-black text-slate-800">活動二：小強故事大挑戰鎖定中</h4>
+        <p class="text-slate-600 text-sm max-w-md font-medium">請專心聆聽老師講解，待老師開啟此活動。</p>
       </div>
 
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-3">
-          <span class="bg-indigo-600 text-white font-black px-3 py-1 rounded-xl text-xs sm:text-sm">步驟三</span>
+          <span class="bg-indigo-600 text-white font-black px-3 py-1 rounded-xl text-xs sm:text-sm">活動二</span>
           <h3 class="text-xl sm:text-2xl font-black text-slate-800">小強故事大挑戰 🕵️‍♂️</h3>
         </div>
         <span id="status-chain" class="text-xs font-bold text-slate-400">未答題</span>
@@ -537,15 +537,15 @@
 
       <div class="flex justify-between items-center pt-2">
         <button onclick="switchStudentStep(2)" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-2xl text-sm cursor-pointer">
-          ⬅️ 返回步驟二
+          ⬅️ 返回活動一
         </button>
         <button onclick="switchStudentStep(4)" class="bg-blue-600 hover:bg-blue-700 text-white font-black px-6 py-3 rounded-2xl shadow-md transition active:scale-95 text-base cursor-pointer">
-          進入 自律承諾牆 ➔
+          前往 總結：簽署承諾牆 ➔
         </button>
       </div>
     </section>
 
-    <!-- ==================== 步驟四：自律承諾牆 ==================== -->
+    <!-- ==================== 總結：自律承諾牆 ==================== -->
     <section id="student-step-4" class="student-step-panel bg-gradient-to-br from-emerald-500 to-teal-700 rounded-3xl p-6 sm:p-8 text-white shadow-lg text-center space-y-5 hidden">
       <div class="text-5xl">✍️</div>
       <h3 class="text-2xl sm:text-3xl font-black">良好網上公民自律承諾</h3>
@@ -591,7 +591,7 @@
 
       <div class="pt-4 text-left border-t border-emerald-400/30">
         <button onclick="switchStudentStep(3)" class="bg-emerald-800/60 hover:bg-emerald-800 text-white font-bold px-4 py-2 rounded-xl text-sm cursor-pointer">
-          ⬅️ 返回步驟三
+          ⬅️ 返回活動二
         </button>
       </div>
     </section>
@@ -628,7 +628,7 @@
           🔒 點擊開放：情境 4
         </button>
         <button onclick="teacherSetUnlockStage(5)" id="btn-stage-5" class="stage-btn py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm cursor-pointer transition">
-          🔒 點擊開放：小強故事
+          🔒 點擊開放：活動二（小強故事）
         </button>
       </div>
     </div>
@@ -693,7 +693,7 @@
             <span class="text-3xl">✍️</span>
             <div>
               <h3 class="text-xl font-black text-slate-800">各組網上公民承諾簽署進度（全螢幕打卡牆）</h3>
-              <p class="text-xs text-slate-500">大螢幕實時追蹤各小組於步驟四完成簽署的動態</p>
+              <p class="text-xs text-slate-500">大螢幕實時追蹤各小組於「總結」階段完成簽署的動態</p>
             </div>
           </div>
           <span id="pledgeCountBadge" class="text-base font-black px-4 py-1.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
@@ -1106,7 +1106,7 @@
       syncToFirebase('p2_ict_unlock_stage', stage);
       applyUnlockStageUI(stage);
       
-      const stageNames = { 1: '情境 1', 2: '情境 2', 3: '情境 3', 4: '情境 4', 5: '小強故事大挑戰' };
+      const stageNames = { 1: '情境 1', 2: '情境 2', 3: '情境 3', 4: '情境 4', 5: '活動二（小強故事）' };
       showAlert('🔓', '進度已發佈', `成功解鎖至【${stageNames[stage]}】！全班學生端已即時同步解鎖。`);
     }
 
@@ -1118,7 +1118,7 @@
         { id: 2, name: '情境 2' },
         { id: 3, name: '情境 3' },
         { id: 4, name: '情境 4' },
-        { id: 5, name: '小強故事' }
+        { id: 5, name: '活動二（小強故事）' }
       ];
 
       stageDefs.forEach(s => {
