@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>做個良好網上公民 - P.2 ICT AI 互動學與教平台</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js 實時圖表 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
+    body {
+      font-family: 'Noto Sans TC', system-ui, -apple-system, sans-serif;
+      background-color: #f0f9ff;
+    }
+    .modal-active {
+      display: flex !important;
+    }
+    .badge-pop {
+      animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes pop {
+      0% { transform: scale(0.85); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .lock-overlay {
+      background: rgba(248, 250, 252, 0.94);
+      backdrop-filter: blur(6px);
+    }
+    .step-active {
+      background-color: #2563eb !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+    .option-selected {
+      border-color: #2563eb !important;
+      background-color: #eff6ff !important;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col text-slate-800">
+
+  <!-- ==================== 頂部導航欄 (Top Header) ==================== -->
+  <header class="bg-gradient-to-r from-blue-900 via-indigo-800 to-blue-900 text-white shadow-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <!-- 標題與圖示 -->
+      <div class="flex items-center space-x-3">
+        <span class="text-3xl">🛡️</span>
+        <div>
+          <h1 class="text-lg sm:text-2xl font-black tracking-wide">做個良好網上公民</h1>
+          <p class="text-xs text-blue-200">P.2 ICT AI 互動學與教平台</p>
+        </div>
+      </div>
+
+      <!-- 右側按鈕與組別徽章 -->
+      <div class="flex items-center space-x-3">
+        <!-- 當前動物組別標籤 -->
+        <div id="groupBadgeDisplay" onclick="openGroupModal()" class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-black px-3 py-2 sm:px-5 sm:py-2.5 rounded-full shadow flex items-center space-x-2 text-xs sm:text-base cursor-pointer transition active:scale-95">
+          <span id="currentGroupEmoji">❓</span>
+          <span id="currentGroupName">請選擇組別</span>
+        </div>
+
+        <!-- 教師專區 PIN 保護按鈕 -->
+        <button onclick="promptTeacherPin()" class="bg-blue-950/80 hover:bg-blue-950 text-blue-200 hover:text-white px-3 py-1.5 rounded-xl border border-blue-700/60 font-bold text-xs sm:text-sm flex items-center space-x-1 transition active:scale-95 cursor-pointer">
+          <span>🔒</span>
+          <span>教師專區</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== 動物組別選擇 Modal 彈窗 (入口分流) ==================== -->
+  <div id="groupModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border-4 border-amber-400 text-center badge-pop max-h-[90vh] overflow-y-auto relative">
+      
+      <!-- 首頁頂部直登教師專區按鈕 -->
+      <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
+        <div class="text-left">
+          <span class="text-xs font-black text-amber-700 bg-amber-100 px-3 py-1 rounded-full">P.2 ICT 課堂學與教專用</span>
+        </div>
+        <button onclick="promptTeacherPin()" class="bg-slate-900 hover:bg-slate-800 text-amber-300 font-black text-xs sm:text-sm px-3.5 py-1.5 rounded-xl flex items-center space-x-1.5 transition active:scale-95 shadow border border-slate-700 cursor-pointer">
+          <span>🔒</span>
+          <span>教師專區登入</span>
+        </button>
+      </div>
+
+      <div class="text-5xl mb-2">🐾</div>
+      <h2 class="text-2xl sm:text-3xl font-black text-slate-800 mb-2">歡迎！請選擇一個你喜歡的動物頭像，點擊即可開始學習！</h2>
+      <p class="text-slate-500 text-sm sm:text-base mb-6">點選你們組別最喜歡的動物，開啟今天的學習挑戰吧！</p>
+      
+      <!-- 16 款動物 Emoji 按鈕網格 -->
+      <div id="animalGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
+        <!-- 由 JavaScript 動態生成 16 款動物 -->
+      </div>
+
+      <!-- 首頁底部備用直登教師專區連結 -->
+      <div class="pt-4 border-t border-slate-100 flex items-center justify-center">
+        <button onclick="promptTeacherPin()" class="text-xs text-slate-500 hover:text-indigo-600 font-bold flex items-center space-x-1 underline transition cursor-pointer">
+          <span>🔒 我是老師，點此直接登入教師儀表板（免選組別）</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 教師專區 PIN 碼解鎖 Modal ==================== -->
+  <div id="teacherPinModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border-4 border-indigo-500 text-center badge-pop">
+      <div class="text-5xl mb-2">🔐</div>
+      <h3 class="text-2xl font-black text-slate-800 mb-2">進入教師專區</h3>
+      <p class="text-slate-500 text-sm mb-4">請輸入教師解鎖密碼：</p>
+      
+      <input type="password" id="teacherPinInput" maxlength="4" placeholder="輸入 4 位密碼" class="w-full text-center text-2xl font-black tracking-widest py-3 border-2 border-slate-300 rounded-2xl mb-4 focus:ring-4 focus:ring-indigo-300 focus:border-indigo-500 outline-none">
+      
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="closeTeacherPinModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 rounded-xl cursor-pointer">取消</button>
+        <button onclick="verifyTeacherPin()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow cursor-pointer">解鎖進入</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== AI 法律警示 Modal 彈窗 ==================== -->
+  <div id="lawModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border-4 border-red-500 text-center badge-pop">
+      <div class="text-6xl mb-3">⚖️</div>
+      <h3 id="lawModalTitle" class="text-2xl font-black text-red-600 mb-2">⚖️ 法律警示</h3>
+      <div id="lawModalContent" class="bg-red-50 text-slate-800 p-4 sm:p-5 rounded-2xl mb-6 text-left text-base sm:text-lg leading-relaxed border-2 border-red-200 shadow-inner">
+        <!-- 動態帶入法律條文與觀念建構 -->
+      </div>
+      <button onclick="closeLawModal()" class="bg-red-600 hover:bg-red-700 text-white font-black text-lg px-8 py-3.5 rounded-2xl shadow-lg w-full active:scale-95 transition cursor-pointer">
+        明白！做個守法好公民 👍
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== 自訂 Message Modal ==================== -->
+  <div id="msgModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center badge-pop border-4 border-blue-500 shadow-2xl">
+      <div id="msgModalIcon" class="text-5xl mb-2">📢</div>
+      <h3 id="msgModalTitle" class="text-xl font-black text-slate-800 mb-2">提示</h3>
+      <p id="msgModalBody" class="text-slate-600 text-sm mb-6 leading-relaxed"></p>
+      <button onclick="closeMsgModal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-3 rounded-xl shadow active:scale-95 transition cursor-pointer">確定</button>
+    </div>
+  </div>
+
+  <!-- ==================== 自訂 Confirm 重置數據 Modal ==================== -->
+  <div id="confirmModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center badge-pop border-4 border-red-500 shadow-2xl">
+      <div class="text-5xl mb-2">⚠️</div>
+      <h3 class="text-xl font-black text-slate-800 mb-2">確定重置數據？</h3>
+      <p class="text-slate-600 text-sm mb-6">此操作將會清空所有組別的答題數據與簽署紀錄，無法復原。</p>
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="closeConfirmModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 rounded-xl active:scale-95 transition cursor-pointer">取消</button>
+        <button onclick="executeResetData()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl shadow active:scale-95 transition cursor-pointer">確定清空</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 1. 學生端學習介面 (Student Mode) ==================== -->
+  <main id="studentView" class="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 space-y-6">
+    
+    <!-- 頁首歡迎條 -->
+    <div class="bg-gradient-to-r from-amber-400 to-orange-400 rounded-3xl p-5 shadow-sm text-slate-900 flex items-center justify-between">
+      <div>
+        <h2 class="text-xl sm:text-2xl font-black mb-0.5">👋 你好，<span id="welcomeGroupName" class="underline decoration-wavy">請先選擇組別</span>！</h2>
+        <p class="text-xs sm:text-sm font-medium opacity-90">今天讓我們一步步學習如何避開網絡陷阱！</p>
+      </div>
+      <div class="text-4xl hidden sm:block">🌟</div>
+    </div>
+
+    <!-- 📌 學生端四大步驟導航頁籤 -->
+    <nav class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-200/80 p-1.5 rounded-2xl border border-slate-300">
+      <button onclick="switchStudentStep(1)" id="step-nav-1" class="step-nav-btn step-active py-3 px-2 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center space-x-1 transition cursor-pointer">
+        <span>📌 步驟一</span>
+        <span class="hidden md:inline">：舊知溫故</span>
+      </button>
+      <button onclick="switchStudentStep(2)" id="step-nav-2" class="step-nav-btn bg-white text-slate-600 hover:text-slate-900 py-3 px-2 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center space-x-1 transition cursor-pointer">
+        <span>🎭 步驟二</span>
+        <span class="hidden md:inline">：4大情境</span>
+      </button>
+      <button onclick="switchStudentStep(3)" id="step-nav-3" class="step-nav-btn bg-white text-slate-600 hover:text-slate-900 py-3 px-2 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center space-x-1 transition cursor-pointer">
+        <span>🎯 步驟三</span>
+        <span class="hidden md:inline">：小強故事</span>
+      </button>
+      <button onclick="switchStudentStep(4)" id="step-nav-4" class="step-nav-btn bg-white text-slate-600 hover:text-slate-900 py-3 px-2 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center space-x-1 transition cursor-pointer">
+        <span>✍️ 步驟四</span>
+        <span class="hidden md:inline">：自律承諾</span>
+      </button>
+    </nav>
+
+    <!-- ==================== 步驟一：舊知溫故 ==================== -->
+    <section id="student-step-1" class="student-step-panel space-y-6">
+      <div class="bg-white rounded-3xl p-6 shadow-sm border-2 border-slate-200 space-y-5">
+        <div class="flex items-center space-x-3 border-b pb-3 border-slate-100">
+          <span class="text-3xl">💡</span>
+          <div>
+            <h3 class="text-xl font-black text-slate-800">步驟一：舊知溫故（上節課學過了什麼？）</h3>
+            <p class="text-xs text-slate-500">複習我們已經學過的兩個良好網上公民守律：</p>
+          </div>
+        </div>
+        
+        <div class="grid sm:grid-cols-2 gap-4">
+          <!-- 舊知 1 -->
+          <div class="bg-sky-50 p-5 rounded-2xl border-2 border-sky-200 space-y-2">
+            <div class="text-xl font-black text-sky-900 flex items-center space-x-2">
+              <span>🎮</span>
+              <span>非法分享版權作品</span>
+            </div>
+            <p class="text-sm text-slate-700 leading-relaxed font-medium">
+              在網上非法分享版權作品是侵犯版權的違法行為。我們應該支持正版！
+            </p>
+          </div>
+          <!-- 舊知 2 -->
+          <div class="bg-indigo-50 p-5 rounded-2xl border-2 border-indigo-200 space-y-2">
+            <div class="text-xl font-black text-indigo-900 flex items-center space-x-2">
+              <span>🔑</span>
+              <span>不誠實使用電腦</span>
+            </div>
+            <p class="text-sm text-slate-700 leading-relaxed font-medium">
+              擅自使用他人的帳戶及密碼登入屬於不誠實取用電腦罪，絕非開玩笑！
+            </p>
+          </div>
+        </div>
+
+        <div class="pt-4 text-right">
+          <button onclick="switchStudentStep(2)" class="bg-blue-600 hover:bg-blue-700 text-white font-black px-6 py-3 rounded-2xl shadow-md transition active:scale-95 text-base cursor-pointer">
+            溫故完成！進入 步驟二：4大情境抉擇 ➔
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 步驟二：4 大網絡情境抉擇 ==================== -->
+    <section id="student-step-2" class="student-step-panel space-y-6 hidden">
+      <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200 space-y-3">
+        <div class="flex items-center space-x-2">
+          <span class="bg-blue-600 text-white font-black px-3 py-1 rounded-xl text-xs sm:text-sm">步驟二</span>
+          <h3 class="text-lg sm:text-xl font-black text-slate-800">4 大網絡情境抉擇</h3>
+        </div>
+
+        <!-- 大面積觸控卡片切換按鈕 -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+          <button onclick="switchScenarioSubTab(1)" id="sub-sc-1" class="scenario-sub-tab p-4 rounded-2xl font-black text-base sm:text-lg bg-blue-600 text-white shadow-md border-2 border-blue-600 flex flex-col items-center justify-center space-y-1 transition active:scale-95 cursor-pointer">
+            <span class="text-xs font-bold text-blue-100 uppercase tracking-wider">SCENARIO 1</span>
+            <span class="text-lg sm:text-xl">🏃‍♂️ 情境 1</span>
+            <span class="text-xs font-normal opacity-90">(網絡欺凌)</span>
+          </button>
+
+          <button onclick="switchScenarioSubTab(2)" id="sub-sc-2" class="scenario-sub-tab p-4 rounded-2xl font-black text-base sm:text-lg bg-slate-50 text-slate-700 hover:bg-slate-100 border-2 border-slate-200 flex flex-col items-center justify-center space-y-1 transition active:scale-95 cursor-pointer">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">SCENARIO 2</span>
+            <span class="text-lg sm:text-xl">🙋‍♂️ 情境 2</span>
+            <span class="text-xs font-normal text-slate-500">(交友陷阱)</span>
+          </button>
+
+          <button onclick="switchScenarioSubTab(3)" id="sub-sc-3" class="scenario-sub-tab p-4 rounded-2xl font-black text-base sm:text-lg bg-slate-50 text-slate-700 hover:bg-slate-100 border-2 border-slate-200 flex flex-col items-center justify-center space-y-1 transition active:scale-95 cursor-pointer">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">SCENARIO 3</span>
+            <span class="text-lg sm:text-xl">🥛 情境 3</span>
+            <span class="text-xs font-normal text-slate-500">(虛假訊息)</span>
+          </button>
+
+          <button onclick="switchScenarioSubTab(4)" id="sub-sc-4" class="scenario-sub-tab p-4 rounded-2xl font-black text-base sm:text-lg bg-slate-50 text-slate-700 hover:bg-slate-100 border-2 border-slate-200 flex flex-col items-center justify-center space-y-1 transition active:scale-95 cursor-pointer">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">SCENARIO 4</span>
+            <span class="text-lg sm:text-xl">🎁 情境 4</span>
+            <span class="text-xs font-normal text-slate-500">(恐嚇言論)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 情境 1：網絡欺凌 -->
+      <div id="scenario-card-1" class="scenario-sub-card relative bg-white rounded-3xl p-6 shadow-md border-2 border-blue-100 space-y-4 overflow-hidden">
+        <div class="flex items-center justify-between">
+          <span class="bg-rose-100 text-rose-700 font-bold px-3 py-1 rounded-full text-xs sm:text-sm">情境 1：網絡欺凌</span>
+          <span id="status-unit1" class="text-xs font-bold text-slate-400">未作答</span>
+        </div>
+
+        <div class="aspect-[16/9] w-full bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 shadow-inner flex items-center justify-center relative">
+          <img id="scenario-1-comic" src="1.jpg" alt="情境1四格漫畫" class="w-full h-full object-cover">
+        </div>
+
+        <h4 class="text-lg font-bold text-slate-800">🏃‍♂️ 接力賽失誤事件</h4>
+        <p class="text-slate-600 text-sm sm:text-base">同學在陸運會接力賽掉棒，有人將他的照片惡搞改圖並發到班網討論區嘲笑。你會怎樣做？</p>
+        
+        <div class="grid sm:grid-cols-2 gap-3 pt-2">
+          <button onclick="submitAnswer('unit1', 'A')" class="p-4 rounded-2xl border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 font-bold text-sm sm:text-base text-left text-slate-800 transition active:scale-95 flex items-center justify-between shadow-sm cursor-pointer">
+            <span>A. 覺得有趣，跟著留言嘲笑</span>
+            <span class="text-2xl ml-2">😅</span>
+          </button>
+          <button onclick="submitAnswer('unit1', 'B')" class="p-4 rounded-2xl border-2 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 font-bold text-sm sm:text-base text-left text-slate-800 transition active:scale-95 flex items-center justify-between shadow-sm cursor-pointer">
+            <span>B. 勸阻同學並向老師報告</span>
+            <span class="text-2xl ml-2">🛡️</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 情境 2：網上交友陷阱 -->
+      <div id="scenario-card-2" class="scenario-sub-card relative bg-white rounded-3xl p-6 shadow-md border-2 border-blue-100 space-y-4 overflow-hidden hidden">
+        <div id="lock-overlay-scenario-2" class="absolute inset-0 z-20 lock-overlay flex flex-col items-center justify-center text-center p-6 space-y-3">
+          <div class="text-5xl animate-bounce">🔒</div>
+          <h4 class="text-2xl font-black text-slate-800">情境 2 暫時鎖定中</h4>
+          <p class="text-slate-600 text-sm max-w-md font-medium">請專心聆聽老師講解，待老師開啟此情境。</p>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="bg-amber-100 text-amber-700 font-bold px-3 py-1 rounded-full text-xs sm:text-sm">情境 2：網上交友陷阱</span>
+          <span id="status-unit2" class="text-xs font-bold text-slate-400">未作答</span>
+        </div>
+
+        <div class="aspect-[16/9] w-full bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 shadow-inner flex items-center justify-center relative">
+          <img id="scenario-2-comic" src="2.jpg" alt="情境2四格漫畫" class="w-full h-full object-cover">
+        </div>
+
+        <h4 class="text-lg font-bold text-slate-800">🙋‍♂️ 網上「高材生」網友</h4>
+        <p class="text-slate-600 text-sm sm:text-base">網上有個自稱「隔壁名校高材生」的陌生人主動加你，說可以教你功課，但教的題目全錯。你會怎樣做？</p>
+
+        <div class="grid sm:grid-cols-2 gap-3 pt-2">
+          <button onclick="submitAnswer('unit2', 'A')" class="p-4 rounded-2xl border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 font-bold text-sm sm:text-base text-left text-slate-800 transition active:scale-95 flex items-center justify-between shadow-sm cursor-pointer">
+            <span>A. 繼續相信他，聽他指揮</span>
+            <span class="text-2xl ml-2">💬</span>
+          </button>
+          <button onclick="submitAnswer('unit2', 'B')" class="p-4 rounded-2xl border-2 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 font-bold text-sm sm:text-base text-left text-slate-800 transition active:scale-95 flex items-center justify-between shadow-sm cursor-pointer">
+            <span>B. 停止聯絡，並告知家長或老師</span>
+            <span class="text-2xl ml-2">🚫</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 情境 3：發佈虛假訊息 -->
+      <div id="scenario-card-3" class="scenario-sub-card relative bg-white rounded-3xl p-6 shadow-md border-2 border-blue-100 space-y-4 overflow-hidden hidden">
+        <div id="lock-overlay-scenario-3" class="absolute inset-0 z-20 lock-overlay flex flex-col items-center justify-center text-center p-6 space-y-3">
+          <div class="text-5xl animate-bounce">🔒</div>
+          <h4 class="text-2xl font-black text-slate-800">情境 3 暫時鎖定中</h4>
+          <p class="text-slate-600 text-sm max-w-md font-medium">請專心聆聽老師講解，待老師開啟此情境。</p>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="bg-purple-100 text-purple-700 font-bold px-3 py-1 rounded-full text-xs sm:text-sm">情境 3：發佈虛假訊息</span>
+          <span id="status-unit3" class="text-xs font-bold text-slate-400">未作答</span>
+        </div>
+
+        <div class="aspect-[16/9] w-full bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 shadow-inner flex items-center justify-center relative">
+          <img id="scenario-3-comic" src="3.jpg" alt="情境3四格漫畫" class="w-full h-full object-cover">
+        </div>
+
+        <h4 class="text-lg font-bold text-slate-800">🥛「牛奶有毒」網上謠言</h4>
+        <p class="text-slate-600 text-sm sm:text-base">討論區有人發帖說「小學小息發的牛奶全都有毒！」，你看到後感到很害怕。你會怎樣做？</p>
+
+        <div class="grid sm:grid-cols-2 gap-3 pt-2">
+          <button onclick="submitAnswer('unit3', 'A')" class="p-4 rounded-2xl border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 font-bold text-sm sm:text-base text-left text-slate-800 transition active:scale-95 flex items-center justify-between shadow-sm cursor-pointer">
+            <span>A. 立刻轉發到班群提醒大家</span>
+            <span class="text-2xl ml-2">📢</span>
+          </button>
+          <button onclick="submitAnswer('unit3', 'B')" class="p-4 rounded-2xl border-2 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 font-bold text-sm sm:text-base text-left text-slate-800 transition active:scale-95 flex items-center justify-between shadow-sm cursor-pointer">
+            <span>B. 不隨意轉發，先向學校或家長查證</span>
+            <span class="text-2xl ml-2">🔍</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 情境 4：發佈恐嚇言論 -->
+      <div id="scenario-card-4" class="scenario-sub-card relative bg-white rounded-3xl p-6 shadow-md border-2 border-blue-100 space-y-4 overflow-hidden hidden">
+        <div id="lock-overlay-scenario-4" class="absolute inset-0 z-20 lock-overlay flex flex-col items-center justify-center text-center p-6 space-y-3">
+          <div class="text-5xl animate-bounce">🔒</div>
+          <h4 class="text-2xl font-black text-slate-800">情境 4 暫時鎖定中</h4>
+          <p class="text-slate-600 text-sm max-w-md font-medium">請專心聆聽老師講解，待老師開啟此情境。</p>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="bg-red-100 text-red-700 font-bold px-3 py-1 rounded-full text-xs sm:text-sm">情境 4：發佈恐嚇言論</span>
+          <span id="status-unit4" class="text-xs font-bold text-slate-400">未作答</span>
+        </div>
+
+        <div class="aspect-[16/9] w-full bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 shadow-inner flex items-center justify-center relative">
+          <img id="scenario-4-comic" src="4.jpg" alt="情境4四格漫畫" class="w-full h-full object-cover">
+        </div>
+
+        <h4 class="text-lg font-bold text-slate-800">🎁 逼送生日禮物事件</h4>
+        <p class="text-slate-600 text-sm sm:text-base">小強下週生日，在討論區發帖「不送禮物給我就把你鎖進儲物櫃！」。你會怎樣做？</p>
+
+        <div class="grid sm:grid-cols-2 gap-3 pt-2">
+          <button onclick="submitAnswer('unit4', 'A')" class="p-4 rounded-2xl border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 font-bold text-sm sm:text-base text-left text-slate-800 transition active:scale-95 flex items-center justify-between shadow-sm cursor-pointer">
+            <span>A. 覺得這只是為了要禮物而開玩笑</span>
+            <span class="text-2xl ml-2">🎈</span>
+          </button>
+          <button onclick="submitAnswer('unit4', 'B')" class="p-4 rounded-2xl border-2 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 font-bold text-sm sm:text-base text-left text-slate-800 transition active:scale-95 flex items-center justify-between shadow-sm cursor-pointer">
+            <span>B. 明白這已構成恐嚇，會傷害他人並觸犯法律</span>
+            <span class="text-2xl ml-2">🛑</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 下一步按鈕 -->
+      <div class="flex justify-between items-center pt-2">
+        <button onclick="switchStudentStep(1)" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-2xl text-sm cursor-pointer">
+          ⬅️ 返回步驟一
+        </button>
+        <button onclick="switchStudentStep(3)" class="bg-blue-600 hover:bg-blue-700 text-white font-black px-6 py-3 rounded-2xl shadow-md transition active:scale-95 text-base cursor-pointer">
+          進入 步驟三：小強故事大挑戰 ➔
+        </button>
+      </div>
+    </section>
+
+    <!-- ==================== 步驟三：小強故事大挑戰 ==================== -->
+    <section id="student-step-3" class="student-step-panel relative bg-white rounded-3xl p-6 shadow-lg border-2 border-indigo-200 space-y-6 overflow-hidden hidden">
+      
+      <!-- 🔒 故事大挑戰鎖定遮罩牆 -->
+      <div id="lock-overlay-scenario-chain" class="absolute inset-0 z-20 lock-overlay flex flex-col items-center justify-center text-center p-6 space-y-3">
+        <div class="text-5xl animate-bounce">🔒</div>
+        <h4 class="text-2xl font-black text-slate-800">小強故事大挑戰鎖定中</h4>
+        <p class="text-slate-600 text-sm max-w-md font-medium">請專心聆聽老師講解，待老師開啟此情境。</p>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <span class="bg-indigo-600 text-white font-black px-3 py-1 rounded-xl text-xs sm:text-sm">步驟三</span>
+          <h3 class="text-xl sm:text-2xl font-black text-slate-800">小強故事大挑戰 🕵️‍♂️</h3>
+        </div>
+        <span id="status-chain" class="text-xs font-bold text-slate-400">未答題</span>
+      </div>
+
+      <p class="text-slate-600 text-sm sm:text-base">請觀察下方 4 格故事，點選卡片拆解小強在網上的 3 個違法不當行為：</p>
+
+      <!-- 🌟 4 格漫畫展示區：搭配最新劇本與加大字級導讀卡 -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200">
+        
+        <!-- 第 1 格 -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm space-y-3 border border-slate-200 flex flex-col h-full justify-between">
+          <div class="aspect-video bg-slate-100 rounded-xl overflow-hidden flex items-center justify-center border border-dashed border-slate-300 relative shadow-inner shrink-0">
+            <img id="comic-panel-1" src="keung_1.jfif" alt="第1格漫畫" class="w-full h-full object-cover">
+          </div>
+          <!-- 加大且對齊高對比導讀文字卡 -->
+          <div class="flex-1 flex items-center bg-slate-100/90 p-3.5 rounded-xl border border-slate-200 min-h-[110px]">
+            <p class="text-base sm:text-xl font-bold text-slate-900 leading-relaxed">
+              小明在體育課踢足球時，不小心在踢開球時撞到小強，小強感到非常憤怒。
+            </p>
+          </div>
+        </div>
+
+        <!-- 第 2 格 -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm space-y-3 border border-slate-200 flex flex-col h-full justify-between">
+          <div class="aspect-video bg-slate-100 rounded-xl overflow-hidden flex items-center justify-center border border-dashed border-slate-300 relative shadow-inner shrink-0">
+            <img id="comic-panel-2" src="keung_2.jfif" alt="第2格漫畫" class="w-full h-full object-cover">
+          </div>
+          <!-- 加大且對齊高對比導讀文字卡 -->
+          <div class="flex-1 flex items-center bg-blue-50 p-3.5 rounded-xl border border-blue-200 min-h-[110px]">
+            <p class="text-base sm:text-xl font-bold text-slate-900 leading-relaxed">
+              小強回家後，在社交平台發貼文宣稱：<span class="text-blue-700">「小明今天在學校故意踢傷我！大家要小心這個危險人物！」</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- 第 3 格 -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm space-y-3 border border-slate-200 flex flex-col h-full justify-between">
+          <div class="aspect-video bg-slate-100 rounded-xl overflow-hidden flex items-center justify-center border border-dashed border-slate-300 relative shadow-inner shrink-0">
+            <img id="comic-panel-3" src="keung_3.jfif" alt="第3格漫畫" class="w-full h-full object-cover">
+          </div>
+          <!-- 加大且對齊高對比導讀文字卡 -->
+          <div class="flex-1 flex items-center bg-purple-50 p-3.5 rounded-xl border border-purple-200 min-h-[110px]">
+            <p class="text-base sm:text-xl font-bold text-slate-900 leading-relaxed">
+              小強將小明的照片合成上暴龍的頭，發到社交平台並寫道：<span class="text-purple-800">「大家以後不要跟他玩，誰跟他玩就是我的敵人！」</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- 第 4 格 -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm space-y-3 border border-slate-200 flex flex-col h-full justify-between">
+          <div class="aspect-video bg-slate-100 rounded-xl overflow-hidden flex items-center justify-center border border-dashed border-slate-300 relative shadow-inner shrink-0">
+            <img id="comic-panel-4" src="keung_4.jfif" alt="第4格漫畫" class="w-full h-full object-cover">
+          </div>
+          <!-- 加大且對齊高對比導讀文字卡 -->
+          <div class="flex-1 flex items-center bg-red-50 p-3.5 rounded-xl border border-red-200 min-h-[110px]">
+            <p class="text-base sm:text-xl font-bold text-slate-900 leading-relaxed">
+              小明傳訊息請小強刪帖，小強私訊回覆：<span class="text-red-700">「如果你敢告狀，我就去你家門口堵你，讓你好看！」</span>
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 6 大不當行為卡片點選區 -->
+      <div class="bg-indigo-50/70 p-5 rounded-2xl border border-indigo-100 space-y-6">
+        
+        <!-- 行動 1 -->
+        <div class="space-y-2">
+          <label class="block font-black text-indigo-950 text-sm sm:text-base">
+            1. 行動 ① (指小明故意踢傷我) 屬於哪項不當行為？
+          </label>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="grid-act-1">
+            <!-- 由 JS 動態生成 6 大行為按鈕 -->
+          </div>
+        </div>
+
+        <!-- 行動 2 -->
+        <div class="space-y-2">
+          <label class="block font-black text-indigo-950 text-sm sm:text-base">
+            2. 行動 ② (暴龍改圖呼籲排擠) 屬於哪項不當行為？
+          </label>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="grid-act-2">
+            <!-- 由 JS 動態生成 6 大行為按鈕 -->
+          </div>
+        </div>
+
+        <!-- 行動 3 -->
+        <div class="space-y-2">
+          <label class="block font-black text-indigo-950 text-sm sm:text-base">
+            3. 行動 ③ (私訊威脅門口堵人) 屬於哪項不當行為？
+          </label>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="grid-act-3">
+            <!-- 由 JS 動態生成 6 大行為按鈕 -->
+          </div>
+        </div>
+
+        <button onclick="submitChainChallenge()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3.5 rounded-xl shadow transition active:scale-95 text-base sm:text-lg cursor-pointer">
+          提交答案 🚀
+        </button>
+      </div>
+
+      <div class="flex justify-between items-center pt-2">
+        <button onclick="switchStudentStep(2)" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-2xl text-sm cursor-pointer">
+          ⬅️ 返回步驟二
+        </button>
+        <button onclick="switchStudentStep(4)" class="bg-blue-600 hover:bg-blue-700 text-white font-black px-6 py-3 rounded-2xl shadow-md transition active:scale-95 text-base cursor-pointer">
+          進入 自律承諾牆 ➔
+        </button>
+      </div>
+    </section>
+
+    <!-- ==================== 步驟四：自律承諾牆 ==================== -->
+    <section id="student-step-4" class="student-step-panel bg-gradient-to-br from-emerald-500 to-teal-700 rounded-3xl p-6 sm:p-8 text-white shadow-lg text-center space-y-5 hidden">
+      <div class="text-5xl">✍️</div>
+      <!-- 已移除「步驟四：」前綴 -->
+      <h3 class="text-2xl sm:text-3xl font-black">良好網上公民自律承諾</h3>
+      
+      <!-- 5 大具體承諾條目卡片 -->
+      <div class="max-w-2xl mx-auto text-left bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 text-emerald-50 space-y-3 text-sm sm:text-base shadow-inner">
+        <p class="font-black text-amber-300 text-center mb-2 text-base sm:text-lg tracking-wide">
+          我承諾做個良好網上公民，時刻做到：
+        </p>
+        <ul class="space-y-2.5 leading-relaxed">
+          <li class="flex items-start space-x-2.5">
+            <span class="text-xl">🎮</span>
+            <span><strong>1. 尊重知識產權：</strong>不非法分享或上下載版權檔案。</span>
+          </li>
+          <li class="flex items-start space-x-2.5">
+            <span class="text-xl">💬</span>
+            <span><strong>2. 注意網上言行：</strong>時刻注意言行，並為自己的言行負責。</span>
+          </li>
+          <li class="flex items-start space-x-2.5">
+            <span class="text-xl">🛑</span>
+            <span><strong>3. 拒絕網絡欺凌：</strong>不參與欺凌，並主動為受害人提供協助。</span>
+          </li>
+          <li class="flex items-start space-x-2.5">
+            <span class="text-xl">🔍</span>
+            <span><strong>4. 保持批判思考：</strong>對網上留言持謹慎態度，避免誤交損友。</span>
+          </li>
+          <li class="flex items-start space-x-2.5">
+            <span class="text-xl">⚖️</span>
+            <span><strong>5. 時刻奉公守法：</strong>無論現實或網絡，向所有不法行為說不！</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="pt-2">
+        <button id="pledgeBtn" onclick="submitPledge()" class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-black text-lg px-8 py-4 rounded-2xl shadow-xl transition transform active:scale-95 cursor-pointer">
+          ✍️ 點擊簽署承諾
+        </button>
+      </div>
+
+      <div id="pledgeCard" class="hidden bg-white/10 backdrop-blur-md border border-white/30 rounded-2xl p-4 max-w-md mx-auto badge-pop">
+        <p class="text-amber-300 font-bold text-lg">🎉 簽署成功！感謝你們為良好網上公民出力！</p>
+      </div>
+
+      <div class="pt-4 text-left border-t border-emerald-400/30">
+        <button onclick="switchStudentStep(3)" class="bg-emerald-800/60 hover:bg-emerald-800 text-white font-bold px-4 py-2 rounded-xl text-sm cursor-pointer">
+          ⬅️ 返回步驟三
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== 2. 教師實時數據儀表板 (Teacher Dashboard) ==================== -->
+  <main id="teacherView" class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6 hidden">
+    
+    <!-- 🔒 課堂進度同步解鎖控制台 -->
+    <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-5 rounded-3xl shadow-xl border-2 border-indigo-500/30 space-y-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <span class="text-2xl">🔒</span>
+          <h3 class="text-lg font-black text-amber-300">觀課控班控制台：課堂進度解鎖發佈</h3>
+        </div>
+        <button onclick="switchMode('student')" class="bg-slate-700 hover:bg-slate-600 text-xs text-slate-200 px-3 py-1 rounded-full border border-slate-500 cursor-pointer">
+          切換回學生端 View
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1">
+        <button onclick="teacherSetUnlockStage(1)" id="btn-stage-1" class="stage-btn py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm bg-amber-400 text-slate-900 shadow cursor-pointer">
+          📍 情境 1 (開放)
+        </button>
+        <button onclick="teacherSetUnlockStage(2)" id="btn-stage-2" class="stage-btn py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 cursor-pointer">
+          🔓 解鎖情境 2
+        </button>
+        <button onclick="teacherSetUnlockStage(3)" id="btn-stage-3" class="stage-btn py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 cursor-pointer">
+          🔓 解鎖情境 3
+        </button>
+        <button onclick="teacherSetUnlockStage(4)" id="btn-stage-4" class="stage-btn py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 cursor-pointer">
+          🔓 解鎖情境 4
+        </button>
+        <button onclick="teacherSetUnlockStage(5)" id="btn-stage-5" class="stage-btn py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 cursor-pointer">
+          🔓 解鎖小強故事
+        </button>
+      </div>
+    </div>
+
+    <!-- 頂部測試與控制工具列 -->
+    <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center space-x-2">
+        <span class="text-2xl">📊</span>
+        <h2 class="text-xl font-bold text-slate-800">全班實時診斷儀表板</h2>
+        <span id="responseCountBadge" class="bg-blue-100 text-blue-800 font-bold text-xs px-2.5 py-1 rounded-full">已收到 0 組數據</span>
+      </div>
+
+      <div class="flex items-center space-x-2">
+        <button onclick="fillMockData()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm px-3.5 py-2 rounded-xl shadow transition active:scale-95 cursor-pointer">
+          🎲 填入模擬全班數據 (11組)
+        </button>
+        <button onclick="resetAllData()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs sm:text-sm px-3.5 py-2 rounded-xl transition active:scale-95 cursor-pointer">
+          🔄 重置數據
+        </button>
+      </div>
+    </div>
+
+    <!-- 教師專區雙子頁籤導航 -->
+    <div class="flex space-x-3 border-b-2 border-slate-200 pb-1">
+      <button onclick="switchTeacherSubTab('stats')" id="teacher-subtab-stats" class="px-5 py-2.5 rounded-2xl font-black text-sm sm:text-base bg-indigo-600 text-white shadow-md transition cursor-pointer">
+        📊 情境與故事數據診斷
+      </button>
+      <button onclick="switchTeacherSubTab('pledge')" id="teacher-subtab-pledge" class="px-5 py-2.5 rounded-2xl font-bold text-sm sm:text-base bg-white text-slate-600 hover:bg-slate-100 transition cursor-pointer">
+        ✍️ 全班承諾實時打卡牆
+      </button>
+    </div>
+
+    <!-- 子分頁 1：情境與故事數據診斷 -->
+    <div id="teacher-section-stats" class="space-y-6">
+      <div class="flex space-x-2 overflow-x-auto pb-2 border-b border-slate-200">
+        <button onclick="switchDashboardTab('unit1')" id="tab-unit1" class="dash-tab px-4 py-2 rounded-xl text-sm font-bold bg-blue-600 text-white shadow cursor-pointer">情境 1：網絡欺凌</button>
+        <button onclick="switchDashboardTab('unit2')" id="tab-unit2" class="dash-tab px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 hover:bg-slate-100 cursor-pointer">情境 2：交友陷阱</button>
+        <button onclick="switchDashboardTab('unit3')" id="tab-unit3" class="dash-tab px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 hover:bg-slate-100 cursor-pointer">情境 3：虛假訊息</button>
+        <button onclick="switchDashboardTab('unit4')" id="tab-unit4" class="dash-tab px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 hover:bg-slate-100 cursor-pointer">情境 4：恐嚇言論</button>
+        <button onclick="switchDashboardTab('chain')" id="tab-chain" class="dash-tab px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 hover:bg-slate-100 cursor-pointer">小強故事大挑戰</button>
+      </div>
+
+      <div class="grid lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-5 bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col items-center justify-center min-h-[350px]">
+          <h3 id="chartTitle" class="text-lg font-bold text-slate-800 mb-4 text-center">情境 1：全班選擇共識比例</h3>
+          <div class="w-full max-w-[280px] aspect-square relative">
+            <canvas id="dashboardChart"></canvas>
+          </div>
+        </div>
+
+        <div id="dashboardDetails" class="lg:col-span-7 grid sm:grid-cols-2 gap-4">
+          <!-- 由 JS 動態繪製選項卡與動物徽章 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 子分頁 2：全班承諾實時打卡牆 -->
+    <div id="teacher-section-pledge" class="space-y-6 hidden">
+      <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b pb-4">
+          <div class="flex items-center space-x-3">
+            <span class="text-3xl">✍️</span>
+            <div>
+              <h3 class="text-xl font-black text-slate-800">各組網上公民承諾簽署進度（全螢幕打卡牆）</h3>
+              <p class="text-xs text-slate-500">大螢幕實時追蹤各小組於步驟四完成簽署的動態</p>
+            </div>
+          </div>
+          <span id="pledgeCountBadge" class="text-base font-black px-4 py-1.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+            0 / 0 組已完成簽署 (0%)
+          </span>
+        </div>
+
+        <div class="space-y-1.5">
+          <div class="flex justify-between text-xs font-bold text-slate-500 px-1">
+            <span>簽署進度條</span>
+            <span id="pledgePctText">0%</span>
+          </div>
+          <div class="w-full bg-slate-100 h-4 rounded-full overflow-hidden shadow-inner border border-slate-200">
+            <div id="pledgeProgressBar" class="bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 h-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <div id="pledgeBadgesWall" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 pt-2">
+          <!-- 由 JS 動態繪製各組簽署徽章 -->
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ==================== JavaScript 邏輯 ==================== -->
+  <script>
+    const ANIMALS = [
+      { id: 1, name: "樹熊組", emoji: "🐨" },
+      { id: 2, name: "獅子組", emoji: "🦁" },
+      { id: 3, name: "老虎組", emoji: "🐯" },
+      { id: 4, name: "熊貓組", emoji: "🐼" },
+      { id: 5, name: "狐狸組", emoji: "🦊" },
+      { id: 6, name: "小狗組", emoji: "🐶" },
+      { id: 7, name: "小貓組", emoji: "🐱" },
+      { id: 8, name: "兔仔組", emoji: "🐰" },
+      { id: 9, name: "大熊組", emoji: "🐻" },
+      { id: 10, name: "青蛙組", emoji: "🐸" },
+      { id: 11, name: "猴子組", emoji: "🐵" },
+      { id: 12, name: "企鵝組", emoji: "🐧" },
+      { id: 13, name: "獨角獸", emoji: "🦄" },
+      { id: 14, name: "大象組", emoji: "🐘" },
+      { id: 15, name: "海豚組", emoji: "🐬" },
+      { id: 16, name: "貓頭鷹", emoji: "🦉" }
+    ];
+
+    const BEHAVIOR_OPTIONS = [
+      { key: "copyright", label: "非法分享版權作品", emoji: "🎮" },
+      { key: "dishonest", label: "不誠實使用電腦", emoji: "🔑" },
+      { key: "bullying", label: "網絡欺凌", emoji: "🏃‍♂️" },
+      { key: "friend_trap", label: "網上交友陷阱", emoji: "🙋‍♂️" },
+      { key: "fake_info", label: "發佈虛假訊息", emoji: "🥛" },
+      { key: "threat", label: "發佈恐嚇言論", emoji: "🎁" }
+    ];
+
+    // 精確根據便條紙圖片與要求更新：學生端法律警示 + 教師專區真實案件簡述與導引
+    const LAW_INFO = {
+      unit1: {
+        title: "⚖️ 情境 1 法律警示：網絡欺凌與私隱",
+        legalText: "未經同意披露他人個人資料，最高可判罰款一百萬元及監禁五年",
+        caseSummary: "被告 XXX 懷疑假冒他人身份，為受害人開設社交網站帳戶，並將受害人的近照移花接木，製作合成照，激發網民熱議和恥笑。他又將受害人的個人資料放上社交網站，令到受害人飽受滋擾。警方接獲舉報後將他拘捕。",
+        teacherPrompt: "未經同學同意把惡搞照片發到網上或公開他人個人資料，這不只是玩笑，而是觸犯私隱條例！"
+      },
+      unit2: {
+        title: "⚖️ 情境 2 法律警示：網上勒索",
+        legalText: "任何人經證實觸犯勒索罪，最高可判監十四年",
+        caseSummary: "被告 XXX 在網上假扮成女醫生，受害人誤以為真，將自己的裸照傳送給被告用作診症用途。後來，被告利用裸照勒索受害人，並威脅受害人如不繳交款項便公開照片。受害人在友人陪同下報警求助，警方將被告拘捕。",
+        teacherPrompt: "在網上脅迫他人或進行勒索屬於嚴重罪行，切勿隨便相信陌生人或參與違法要求！"
+      },
+      unit3: {
+        title: "⚖️ 情境 3 法律警示：發放虛假訊息",
+        legalText: "任何人如透過互聯網發放惡意虛假訊息，有可能干犯有犯罪或不誠實意圖而取用電腦之罪名，最高可被判處監禁五年",
+        caseSummary: "被告 XXX 在網上討論區發佈虛假訊息，訛稱某間銀行即將出現擠提，呼籲公眾到銀行提取存款。謠言隨即散播，引起公眾恐慌。警方追查後，上門將涉案被告拘捕。",
+        teacherPrompt: "未經證實隨手轉發謠言會引起公眾恐慌，按下發送前一定要先向家長或老師查證！"
+      },
+      unit4: {
+        title: "⚖️ 情境 4 法律警示：刑事恐嚇",
+        legalText: "任何人經證實觸犯刑事恐嚇，最高可判監五年",
+        caseSummary: "被告 XXX 懷疑不滿某位專欄作者的言論，公然在社交網站留言要取她的性命，還指作者全家應當滅門，恐嚇會傷害她和她的家人的身體。警方跟進並調查後，將被告拘捕。",
+        teacherPrompt: "發佈『不送禮物就把你鎖進儲物櫃』這類威脅言論已構成恐嚇罪，網絡絕非法外之地！"
+      }
+    };
+
+    let currentGroup = null;
+    let activeTab = 'unit1';
+    let chartInstance = null;
+    let currentUnlockStage = 1;
+    let chainSelectedOptions = { act1: null, act2: null, act3: null };
+
+    // 本地 Try-Catch 讀寫保護
+    function safeGetStorage(key, defaultVal = {}) {
+      try {
+        const val = localStorage.getItem(key);
+        return val ? JSON.parse(val) : defaultVal;
+      } catch (e) {
+        console.warn("Storage error:", e);
+        return defaultVal;
+      }
+    }
+
+    function safeSetStorage(key, value) {
+      try {
+        localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+      } catch (e) {
+        console.warn("Storage write error:", e);
+      }
+    }
+
+    window.onload = function() {
+      initAnimalGrid();
+      initChainChoiceGrids();
+
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('role') === 'teacher') {
+        switchMode('teacher');
+      } else {
+        loadSavedGroup();
+      }
+
+      const savedStage = parseInt(safeGetStorage('p2_ict_unlock_stage', 1));
+      applyUnlockStageUI(savedStage);
+      updateDashboard();
+
+      window.addEventListener('storage', function(e) {
+        if (e.key === 'p2_ict_data') {
+          updateDashboard();
+          updateStudentUIStatus();
+        }
+        if (e.key === 'p2_ict_unlock_stage') {
+          const newStage = parseInt(e.newValue || '1');
+          applyUnlockStageUI(newStage);
+        }
+      });
+    };
+
+    function initAnimalGrid() {
+      const grid = document.getElementById('animalGrid');
+      grid.innerHTML = '';
+      ANIMALS.forEach(animal => {
+        const btn = document.createElement('button');
+        btn.className = 'bg-slate-50 hover:bg-amber-100 border-2 border-slate-200 hover:border-amber-400 p-3.5 rounded-2xl flex flex-col items-center justify-center transition active:scale-95 space-y-1 cursor-pointer';
+        btn.onclick = () => selectGroup(animal);
+        btn.innerHTML = `
+          <span class="text-3xl sm:text-4xl">${animal.emoji}</span>
+          <span class="font-bold text-slate-800 text-xs sm:text-sm">${animal.name}</span>
+        `;
+        grid.appendChild(btn);
+      });
+    }
+
+    function initChainChoiceGrids() {
+      [1, 2, 3].forEach(actNum => {
+        const container = document.getElementById(`grid-act-${actNum}`);
+        container.innerHTML = '';
+        BEHAVIOR_OPTIONS.forEach(opt => {
+          const btn = document.createElement('button');
+          btn.id = `opt-btn-act${actNum}-${opt.key}`;
+          btn.type = 'button';
+          btn.className = 'bg-white hover:bg-blue-50 border-2 border-slate-200 text-slate-800 font-bold p-2.5 rounded-xl text-xs sm:text-sm flex items-center space-x-1.5 transition text-left active:scale-95 shadow-sm cursor-pointer';
+          btn.onclick = () => selectChainOption(actNum, opt.key);
+          btn.innerHTML = `
+            <span class="text-base sm:text-lg">${opt.emoji}</span>
+            <span class="leading-tight">${opt.label}</span>
+          `;
+          container.appendChild(btn);
+        });
+      });
+    }
+
+    function selectChainOption(actNum, optKey) {
+      chainSelectedOptions[`act${actNum}`] = optKey;
+      
+      BEHAVIOR_OPTIONS.forEach(opt => {
+        const btn = document.getElementById(`opt-btn-act${actNum}-${opt.key}`);
+        if (opt.key === optKey) {
+          btn.className = 'option-selected font-black p-2.5 rounded-xl text-xs sm:text-sm flex items-center space-x-1.5 transition text-left shadow-sm text-blue-700 cursor-pointer';
+        } else {
+          btn.className = 'bg-white hover:bg-blue-50 border-2 border-slate-200 text-slate-800 font-bold p-2.5 rounded-xl text-xs sm:text-sm flex items-center space-x-1.5 transition text-left active:scale-95 shadow-sm cursor-pointer';
+        }
+      });
+    }
+
+    function selectGroup(animal) {
+      currentGroup = animal;
+      safeSetStorage('p2_ict_current_group', animal);
+      
+      document.getElementById('currentGroupEmoji').innerText = animal.emoji;
+      document.getElementById('currentGroupName').innerText = animal.name;
+      document.getElementById('welcomeGroupName').innerText = `${animal.emoji} ${animal.name}`;
+      
+      document.getElementById('groupModal').classList.remove('modal-active');
+      document.getElementById('groupModal').classList.add('hidden');
+
+      switchMode('student');
+      updateStudentUIStatus();
+    }
+
+    function loadSavedGroup() {
+      const saved = safeGetStorage('p2_ict_current_group', null);
+      if (saved && saved.id) {
+        selectGroup(saved);
+      } else {
+        openGroupModal();
+      }
+    }
+
+    function openGroupModal() {
+      document.getElementById('groupModal').classList.remove('hidden');
+      document.getElementById('groupModal').classList.add('modal-active');
+    }
+
+    function switchMode(mode) {
+      if (mode === 'teacher') {
+        document.getElementById('studentView').classList.add('hidden');
+        document.getElementById('teacherView').classList.remove('hidden');
+        updateDashboard();
+      } else {
+        document.getElementById('teacherView').classList.add('hidden');
+        document.getElementById('studentView').classList.remove('hidden');
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function switchStudentStep(stepNum) {
+      document.querySelectorAll('.student-step-panel').forEach(p => p.classList.add('hidden'));
+      document.getElementById(`student-step-${stepNum}`).classList.remove('hidden');
+
+      document.querySelectorAll('.step-nav-btn').forEach((btn, idx) => {
+        if (idx + 1 === stepNum) {
+          btn.className = "step-nav-btn step-active py-3 px-2 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center space-x-1 transition cursor-pointer";
+        } else {
+          btn.className = "step-nav-btn bg-white text-slate-600 hover:text-slate-900 py-3 px-2 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center space-x-1 transition cursor-pointer";
+        }
+      });
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function switchScenarioSubTab(scNum) {
+      document.querySelectorAll('.scenario-sub-card').forEach(c => c.classList.add('hidden'));
+      document.getElementById(`scenario-card-${scNum}`).classList.remove('hidden');
+
+      [1, 2, 3, 4].forEach(i => {
+        const btn = document.getElementById(`sub-sc-${i}`);
+        if (i === scNum) {
+          btn.className = "scenario-sub-tab p-4 rounded-2xl font-black text-base sm:text-lg bg-blue-600 text-white shadow-md border-2 border-blue-600 flex flex-col items-center justify-center space-y-1 transition active:scale-95 cursor-pointer";
+          btn.querySelector('span:first-child').className = "text-xs font-bold text-blue-100 uppercase tracking-wider";
+          btn.querySelector('span:nth-child(3)').className = "text-xs font-normal opacity-90";
+        } else {
+          btn.className = "scenario-sub-tab p-4 rounded-2xl font-black text-base sm:text-lg bg-slate-50 text-slate-700 hover:bg-slate-100 border-2 border-slate-200 flex flex-col items-center justify-center space-y-1 transition active:scale-95 cursor-pointer";
+          btn.querySelector('span:first-child').className = "text-xs font-bold text-slate-400 uppercase tracking-wider";
+          btn.querySelector('span:nth-child(3)').className = "text-xs font-normal text-slate-500";
+        }
+      });
+    }
+
+    function switchTeacherSubTab(subTabKey) {
+      const statsSection = document.getElementById('teacher-section-stats');
+      const pledgeSection = document.getElementById('teacher-section-pledge');
+      const statsBtn = document.getElementById('teacher-subtab-stats');
+      const pledgeBtn = document.getElementById('teacher-subtab-pledge');
+
+      if (subTabKey === 'pledge') {
+        statsSection.classList.add('hidden');
+        pledgeSection.classList.remove('hidden');
+        pledgeBtn.className = "px-5 py-2.5 rounded-2xl font-black text-sm sm:text-base bg-emerald-600 text-white shadow-md transition cursor-pointer";
+        statsBtn.className = "px-5 py-2.5 rounded-2xl font-bold text-sm sm:text-base bg-white text-slate-600 hover:bg-slate-100 transition cursor-pointer";
+      } else {
+        pledgeSection.classList.add('hidden');
+        statsSection.classList.remove('hidden');
+        statsBtn.className = "px-5 py-2.5 rounded-2xl font-black text-sm sm:text-base bg-indigo-600 text-white shadow-md transition cursor-pointer";
+        pledgeBtn.className = "px-5 py-2.5 rounded-2xl font-bold text-sm sm:text-base bg-white text-slate-600 hover:bg-slate-100 transition cursor-pointer";
+      }
+    }
+
+    function promptTeacherPin() {
+      document.getElementById('teacherPinInput').value = '';
+      document.getElementById('teacherPinModal').classList.remove('hidden');
+      document.getElementById('teacherPinModal').classList.add('modal-active');
+    }
+
+    function closeTeacherPinModal() {
+      document.getElementById('teacherPinModal').classList.remove('modal-active');
+      document.getElementById('teacherPinModal').classList.add('hidden');
+    }
+
+    function verifyTeacherPin() {
+      const pin = document.getElementById('teacherPinInput').value;
+      if (pin === '8888') {
+        closeTeacherPinModal();
+        document.getElementById('groupModal').classList.remove('modal-active');
+        document.getElementById('groupModal').classList.add('hidden');
+        switchMode('teacher');
+      } else {
+        showAlert('❌', '密碼錯誤', '密碼不正確，請重新輸入！');
+      }
+    }
+
+    function teacherSetUnlockStage(stage) {
+      currentUnlockStage = stage;
+      safeSetStorage('p2_ict_unlock_stage', stage.toString());
+      applyUnlockStageUI(stage);
+      
+      const stageNames = { 1: '情境 1', 2: '情境 2', 3: '情境 3', 4: '情境 4', 5: '小強故事大挑戰' };
+      showAlert('🔓', '進度已發佈', `成功解鎖至【${stageNames[stage]}】！學生端畫面已同步解鎖。`);
+    }
+
+    function applyUnlockStageUI(stage) {
+      currentUnlockStage = stage;
+      for (let i = 1; i <= 5; i++) {
+        const btn = document.getElementById(`btn-stage-${i}`);
+        if (btn) {
+          if (i === stage) {
+            btn.className = "stage-btn py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm bg-amber-400 text-slate-900 shadow cursor-pointer";
+          } else {
+            btn.className = "stage-btn py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 cursor-pointer";
+          }
+        }
+      }
+
+      const lockOverlaySc2 = document.getElementById('lock-overlay-scenario-2');
+      const lockOverlaySc3 = document.getElementById('lock-overlay-scenario-3');
+      const lockOverlaySc4 = document.getElementById('lock-overlay-scenario-4');
+      const lockOverlayChain = document.getElementById('lock-overlay-scenario-chain');
+
+      if (lockOverlaySc2) lockOverlaySc2.style.display = stage >= 2 ? 'none' : 'flex';
+      if (lockOverlaySc3) lockOverlaySc3.style.display = stage >= 3 ? 'none' : 'flex';
+      if (lockOverlaySc4) lockOverlaySc4.style.display = stage >= 4 ? 'none' : 'flex';
+      if (lockOverlayChain) lockOverlayChain.style.display = stage >= 5 ? 'none' : 'flex';
+    }
+
+    function submitAnswer(unitKey, choice) {
+      if (!currentGroup) {
+        showAlert('⚠️', '請選擇組別', '請先選擇你們的動物組別！');
+        openGroupModal();
+        return;
+      }
+
+      let db = safeGetStorage('p2_ict_data', {});
+      if (!db[currentGroup.id]) {
+        db[currentGroup.id] = { animal: currentGroup };
+      }
+      db[currentGroup.id][unitKey] = choice;
+      safeSetStorage('p2_ict_data', db);
+
+      updateStudentUIStatus();
+      updateDashboard();
+
+      if (choice === 'A' && LAW_INFO[unitKey]) {
+        document.getElementById('lawModalTitle').innerText = LAW_INFO[unitKey].title;
+        document.getElementById('lawModalContent').innerHTML = `
+          <div class="p-2 space-y-2 text-center">
+            <p class="text-lg sm:text-xl font-black text-red-700 leading-relaxed">
+              「${LAW_INFO[unitKey].legalText}」
+            </p>
+          </div>
+        `;
+        document.getElementById('lawModal').classList.remove('hidden');
+        document.getElementById('lawModal').classList.add('modal-active');
+      } else if (choice === 'B') {
+        showAlert('✅', '答對了！做個良好公民', '選擇正確！遇到不當行為應及時制止或向老師/家長求助。');
+      }
+    }
+
+    function closeLawModal() {
+      document.getElementById('lawModal').classList.remove('modal-active');
+      document.getElementById('lawModal').classList.add('hidden');
+    }
+
+    function submitChainChallenge() {
+      if (!currentGroup) {
+        showAlert('⚠️', '請選擇組別', '請先選擇你們的動物組別！');
+        openGroupModal();
+        return;
+      }
+
+      if (!chainSelectedOptions.act1 || !chainSelectedOptions.act2 || !chainSelectedOptions.act3) {
+        showAlert('⚠️', '題目未完成', '請為小強的三個行動均選擇一個不當行為！');
+        return;
+      }
+
+      let db = safeGetStorage('p2_ict_data', {});
+      if (!db[currentGroup.id]) {
+        db[currentGroup.id] = { animal: currentGroup };
+      }
+
+      db[currentGroup.id]['chain'] = { ...chainSelectedOptions };
+      safeSetStorage('p2_ict_data', db);
+
+      updateStudentUIStatus();
+      updateDashboard();
+
+      showAlert('🎯', '提交成功', '小強故事大挑戰答案已成功提交！老師正在大螢幕為全班作數據診斷。');
+    }
+
+    function submitPledge() {
+      if (!currentGroup) {
+        showAlert('⚠️', '請選擇組別', '請先選擇你們的動物組別！');
+        openGroupModal();
+        return;
+      }
+
+      let db = safeGetStorage('p2_ict_data', {});
+      if (!db[currentGroup.id]) {
+        db[currentGroup.id] = { animal: currentGroup };
+      }
+
+      const now = new Date();
+      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+      db[currentGroup.id]['pledged'] = true;
+      db[currentGroup.id]['pledgeTime'] = timeStr;
+      safeSetStorage('p2_ict_data', db);
+
+      updateStudentUIStatus();
+      updateDashboard();
+    }
+
+    function showAlert(icon, title, body) {
+      document.getElementById('msgModalIcon').innerText = icon || '📢';
+      document.getElementById('msgModalTitle').innerText = title || '提示';
+      document.getElementById('msgModalBody').innerText = body || '';
+      document.getElementById('msgModal').classList.remove('hidden');
+      document.getElementById('msgModal').classList.add('modal-active');
+    }
+
+    function closeMsgModal() {
+      document.getElementById('msgModal').classList.remove('modal-active');
+      document.getElementById('msgModal').classList.add('hidden');
+    }
+
+    function resetAllData() {
+      document.getElementById('confirmModal').classList.remove('hidden');
+      document.getElementById('confirmModal').classList.add('modal-active');
+    }
+
+    function closeConfirmModal() {
+      document.getElementById('confirmModal').classList.remove('modal-active');
+      document.getElementById('confirmModal').classList.add('hidden');
+    }
+
+    function executeResetData() {
+      localStorage.removeItem('p2_ict_data');
+      closeConfirmModal();
+      
+      chainSelectedOptions = { act1: null, act2: null, act3: null };
+      [1, 2, 3].forEach(actNum => {
+        BEHAVIOR_OPTIONS.forEach(opt => {
+          const btn = document.getElementById(`opt-btn-act${actNum}-${opt.key}`);
+          if (btn) {
+            btn.className = 'bg-white hover:bg-blue-50 border-2 border-slate-200 text-slate-800 font-bold p-2.5 rounded-xl text-xs sm:text-sm flex items-center space-x-1.5 transition text-left active:scale-95 shadow-sm cursor-pointer';
+          }
+        });
+      });
+
+      updateStudentUIStatus();
+      updateDashboard();
+      showAlert('🗑️', '數據已重置', '全班答題與簽署數據已成功清空！');
+    }
+
+    function updateStudentUIStatus() {
+      if (!currentGroup) return;
+      const db = safeGetStorage('p2_ict_data', {});
+      const groupData = db[currentGroup.id] || {};
+
+      ['unit1', 'unit2', 'unit3', 'unit4'].forEach(u => {
+        const el = document.getElementById(`status-${u}`);
+        if (el) {
+          if (groupData[u]) {
+            el.innerText = `已選擇 ${groupData[u]}`;
+            el.className = "text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200";
+          } else {
+            el.innerText = "未作答";
+            el.className = "text-xs font-bold text-slate-400";
+          }
+        }
+      });
+
+      const chainEl = document.getElementById('status-chain');
+      if (chainEl) {
+        if (groupData.chain) {
+          chainEl.innerText = "已完成答題";
+          chainEl.className = "text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200";
+        } else {
+          chainEl.innerText = "未答題";
+          chainEl.className = "text-xs font-bold text-slate-400";
+        }
+      }
+
+      const pledgeBtn = document.getElementById('pledgeBtn');
+      const pledgeCard = document.getElementById('pledgeCard');
+      if (pledgeBtn && pledgeCard) {
+        if (groupData.pledged) {
+          pledgeBtn.innerText = '✅ 已簽署承諾';
+          pledgeBtn.disabled = true;
+          pledgeBtn.classList.add('opacity-70', 'cursor-not-allowed');
+          pledgeCard.classList.remove('hidden');
+        } else {
+          pledgeBtn.innerText = '✍️ 點擊簽署承諾';
+          pledgeBtn.disabled = false;
+          pledgeBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+          pledgeCard.classList.add('hidden');
+        }
+      }
+    }
+
+    function switchDashboardTab(tabKey) {
+      activeTab = tabKey;
+      document.querySelectorAll('.dash-tab').forEach(t => {
+        t.className = "dash-tab px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 hover:bg-slate-100 cursor-pointer";
+      });
+      const activeEl = document.getElementById(`tab-${tabKey}`);
+      if (activeEl) {
+        activeEl.className = "dash-tab px-4 py-2 rounded-xl text-sm font-bold bg-blue-600 text-white shadow cursor-pointer";
+      }
+      updateDashboard();
+    }
+
+    function getTabTitle(tabKey) {
+      const titles = {
+        unit1: '情境 1：網絡欺凌',
+        unit2: '情境 2：交友陷阱',
+        unit3: '情境 3：虛假訊息',
+        unit4: '情境 4：恐嚇言論',
+        chain: '小強故事大挑戰'
+      };
+      return titles[tabKey] || '';
+    }
+
+    function updatePledgeWall(db, groupIds) {
+      const wallContainer = document.getElementById('pledgeBadgesWall');
+      if (!wallContainer) return;
+      wallContainer.innerHTML = '';
+
+      let pledgedCount = 0;
+      const totalGroupsCount = groupIds.length;
+
+      if (totalGroupsCount === 0) {
+        document.getElementById('pledgeCountBadge').innerText = '0 / 0 組已完成簽署 (0%)';
+        document.getElementById('pledgePctText').innerText = '0%';
+        document.getElementById('pledgeProgressBar').style.width = '0%';
+        wallContainer.innerHTML = `<p class="col-span-full text-xs text-slate-400 italic text-center py-6">暫無組別數據，請先讓學生選擇組別或點擊「🎲 填入模擬全班數據」。</p>`;
+        return;
+      }
+
+      groupIds.forEach(gid => {
+        const item = db[gid];
+        const isPledged = !!item.pledged;
+        if (isPledged) pledgedCount++;
+
+        const card = document.createElement('div');
+        if (isPledged) {
+          const timeText = item.pledgeTime ? ` (${item.pledgeTime})` : '';
+          card.className = 'bg-emerald-50 border-2 border-emerald-300 text-emerald-900 p-3.5 rounded-2xl font-black text-xs sm:text-sm flex items-center justify-between shadow-sm badge-pop';
+          card.innerHTML = `
+            <div class="flex items-center space-x-2 overflow-hidden">
+              <span class="text-2xl">${item.animal.emoji}</span>
+              <span class="truncate">${item.animal.name}</span>
+            </div>
+            <span class="text-[11px] bg-emerald-200 text-emerald-950 px-2 py-0.5 rounded-full font-bold whitespace-nowrap">✅ 已簽署${timeText}</span>
+          `;
+        } else {
+          card.className = 'bg-slate-50 border-2 border-slate-200 text-slate-500 p-3.5 rounded-2xl font-bold text-xs sm:text-sm flex items-center justify-between';
+          card.innerHTML = `
+            <div class="flex items-center space-x-2 overflow-hidden">
+              <span class="text-2xl opacity-60">${item.animal.emoji}</span>
+              <span class="truncate">${item.animal.name}</span>
+            </div>
+            <span class="text-[11px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-medium whitespace-nowrap">⏳ 思考中...</span>
+          `;
+        }
+        wallContainer.appendChild(card);
+      });
+
+      const pct = Math.round((pledgedCount / totalGroupsCount) * 100);
+      document.getElementById('pledgeCountBadge').innerText = `${pledgedCount} / ${totalGroupsCount} 組已完成簽署 (${pct}%)`;
+      document.getElementById('pledgePctText').innerText = `${pct}%`;
+      document.getElementById('pledgeProgressBar').style.width = `${pct}%`;
+    }
+
+    function updateDashboard() {
+      const db = safeGetStorage('p2_ict_data', {});
+      const groupIds = Object.keys(db);
+      document.getElementById('responseCountBadge').innerText = `已收到 ${groupIds.length} 組數據`;
+
+      updatePledgeWall(db, groupIds);
+
+      const detailsContainer = document.getElementById('dashboardDetails');
+      detailsContainer.innerHTML = '';
+
+      if (activeTab.startsWith('unit')) {
+        let countA = 0, countB = 0;
+        let groupsA = [], groupsB = [];
+
+        groupIds.forEach(gid => {
+          const item = db[gid];
+          const ans = item[activeTab];
+          if (ans === 'A') { countA++; groupsA.push(item.animal); }
+          if (ans === 'B') { countB++; groupsB.push(item.animal); }
+        });
+
+        document.getElementById('chartTitle').innerText = `${getTabTitle(activeTab)}：全班選擇共識比例`;
+        renderPieChart(['選項 A (未符合/玩笑)', '選項 B (正確/守法)'], [countA, countB]);
+
+        detailsContainer.className = "lg:col-span-7 grid sm:grid-cols-2 gap-4";
+        detailsContainer.appendChild(createGroupCategoryCard('選項 A (未符合/玩笑)', groupsA, 'border-red-200 bg-red-50/50', 'text-red-700'));
+        detailsContainer.appendChild(createGroupCategoryCard('選項 B (正確/守法)', groupsB, 'border-emerald-200 bg-emerald-50/50', 'text-emerald-700'));
+
+        // 增設「⚖️ 法律警示」、「📋 案件簡述」與「🎯 課堂導引」卡片 (無「學生端收到的警告」字眼)
+        if (LAW_INFO[activeTab]) {
+          const lawAndCaseCard = document.createElement('div');
+          lawAndCaseCard.className = "col-span-full space-y-4 pt-2";
+          lawAndCaseCard.innerHTML = `
+            <!-- ⚖️ 法律警示 -->
+            <div class="bg-red-50 border-2 border-red-300 p-4 sm:p-5 rounded-2xl shadow-sm space-y-1.5">
+              <div class="flex items-center space-x-2 text-red-700 font-black text-base sm:text-lg border-b border-red-200 pb-2">
+                <span class="text-xl">⚖️</span>
+                <span>${LAW_INFO[activeTab].title}</span>
+              </div>
+              <p class="text-slate-800 font-bold text-base sm:text-lg leading-relaxed pt-1">
+                「${LAW_INFO[activeTab].legalText}」
+              </p>
+            </div>
+
+            <!-- 📋 案件簡述 (真實案例阻嚇) -->
+            <div class="bg-emerald-700 text-white rounded-2xl overflow-hidden shadow-md border-2 border-emerald-800">
+              <div class="bg-emerald-800 px-4 py-2.5 font-black text-base sm:text-lg flex items-center space-x-2 border-b border-emerald-600">
+                <span class="text-xl">📋</span>
+                <span>案件簡述（真實案例）</span>
+              </div>
+              <div class="p-4 sm:p-5 bg-white text-slate-800 text-sm sm:text-base leading-relaxed font-bold">
+                ${LAW_INFO[activeTab].caseSummary}
+              </div>
+            </div>
+
+            <!-- 🎯 課堂導引提問 -->
+            <div class="bg-amber-50 border-2 border-amber-300 p-4 sm:p-5 rounded-2xl shadow-sm flex items-start space-x-3 text-amber-950">
+              <span class="text-2xl shrink-0">🎯</span>
+              <div>
+                <h5 class="font-black text-sm sm:text-base text-amber-900 mb-0.5">課堂導引提問建議：</h5>
+                <p class="text-sm sm:text-base font-bold leading-relaxed">
+                  ${LAW_INFO[activeTab].teacherPrompt}
+                </p>
+              </div>
+            </div>
+          `;
+          detailsContainer.appendChild(lawAndCaseCard);
+        }
+
+      } else if (activeTab === 'chain') {
+        document.getElementById('chartTitle').innerText = `小強故事大挑戰：3 個行動正確率統計`;
+
+        const actionDefs = [
+          { key: 'act1', name: '行動 ①：發帖誣衊故意踢傷', correctKey: 'fake_info', correctLabel: '發佈虛假訊息', color: 'blue' },
+          { key: 'act2', name: '行動 ②：暴龍改圖呼籲排擠', correctKey: 'bullying', correctLabel: '網絡欺凌', color: 'purple' },
+          { key: 'act3', name: '行動 ③：私訊威脅門口堵人', correctKey: 'threat', correctLabel: '發佈恐嚇言論', color: 'red' }
+        ];
+
+        let actionAccuracies = [];
+        detailsContainer.className = "lg:col-span-7 space-y-4";
+
+        actionDefs.forEach(act => {
+          let correctCount = 0;
+          let totalSubmitted = 0;
+          let choiceMap = {};
+
+          BEHAVIOR_OPTIONS.forEach(b => choiceMap[b.key] = []);
+
+          groupIds.forEach(gid => {
+            const item = db[gid];
+            if (item.chain && item.chain[act.key]) {
+              totalSubmitted++;
+              const selectedKey = item.chain[act.key];
+              if (selectedKey === act.correctKey) {
+                correctCount++;
+              }
+              if (choiceMap[selectedKey]) {
+                choiceMap[selectedKey].push(item.animal);
+              }
+            }
+          });
+
+          const accuracyPct = totalSubmitted > 0 ? Math.round((correctCount / totalSubmitted) * 100) : 0;
+          actionAccuracies.push(accuracyPct);
+
+          detailsContainer.appendChild(createActionBreakdownCard(act, accuracyPct, correctCount, totalSubmitted, choiceMap));
+        });
+
+        renderBarChart(['行動① 誣衊帖文', '行動② 暴龍改圖', '行動③ 門口堵人'], actionAccuracies);
+      }
+    }
+
+    function createGroupCategoryCard(title, groups, borderBgClass, textClass) {
+      const card = document.createElement('div');
+      card.className = `p-4 rounded-2xl border ${borderBgClass} space-y-3`;
+      
+      let badgeHtml = '';
+      if (groups.length === 0) {
+        badgeHtml = `<p class="text-xs text-slate-400 italic">暫無組別選擇此項</p>`;
+      } else {
+        badgeHtml = `<div class="flex flex-wrap gap-2">` + 
+          groups.map(g => `<span class="bg-white border border-slate-200 text-slate-800 font-bold text-xs px-2.5 py-1 rounded-xl shadow-sm flex items-center space-x-1"><span>${g.emoji}</span><span>${g.name}</span></span>`).join('') +
+          `</div>`;
+      }
+
+      card.innerHTML = `
+        <div class="flex items-center justify-between border-b pb-2 border-slate-200/60">
+          <h4 class="font-bold text-sm ${textClass}">${title}</h4>
+          <span class="font-black text-xs bg-white px-2 py-0.5 rounded-full border border-slate-200">${groups.length} 組</span>
+        </div>
+        ${badgeHtml}
+      `;
+      return card;
+    }
+
+    function createActionBreakdownCard(act, accuracyPct, correctCount, totalSubmitted, choiceMap) {
+      const card = document.createElement('div');
+      card.className = "bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3";
+
+      let correctGroups = choiceMap[act.correctKey] || [];
+      let badgeHtml = '';
+      if (correctGroups.length === 0) {
+        badgeHtml = `<p class="text-xs text-slate-400 italic">暫無組別正確拆解</p>`;
+      } else {
+        badgeHtml = `<div class="flex flex-wrap gap-1.5">` +
+          correctGroups.map(g => `<span class="bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold text-xs px-2 py-0.5 rounded-lg flex items-center space-x-1"><span>${g.emoji}</span><span>${g.name}</span></span>`).join('') +
+          `</div>`;
+      }
+
+      card.innerHTML = `
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <span class="font-black text-slate-800 text-sm sm:text-base">${act.name}</span>
+            <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">答案：${act.correctLabel}</span>
+          </div>
+          <span class="font-black text-sm px-2.5 py-0.5 rounded-full ${accuracyPct >= 70 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+            正確率：${accuracyPct}% (${correctCount}/${totalSubmitted})
+          </span>
+        </div>
+        <div class="space-y-1">
+          <span class="text-xs font-bold text-slate-500">正確答對組別：</span>
+          ${badgeHtml}
+        </div>
+      `;
+      return card;
+    }
+
+    function renderPieChart(labels, data) {
+      const ctx = document.getElementById('dashboardChart').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
+
+      chartInstance = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: ['#ef4444', '#10b981'],
+            borderWidth: 2,
+            borderColor: '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { font: { family: 'Noto Sans TC', weight: 'bold', size: 12 } }
+            }
+          }
+        }
+      });
+    }
+
+    function renderBarChart(labels, data) {
+      const ctx = document.getElementById('dashboardChart').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
+
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '正確率 (%)',
+            data: data,
+            backgroundColor: ['#3b82f6', '#a855f7', '#ef4444'],
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              ticks: { callback: value => value + '%' }
+            }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    }
+
+    function fillMockData() {
+      let mockDb = {};
+      for (let i = 0; i < 11; i++) {
+        const animal = ANIMALS[i];
+        const isPledged = Math.random() > 0.2;
+        mockDb[animal.id] = {
+          animal: animal,
+          unit1: Math.random() > 0.18 ? 'B' : 'A',
+          unit2: Math.random() > 0.1 ? 'B' : 'A',
+          unit3: Math.random() > 0.25 ? 'B' : 'A',
+          unit4: Math.random() > 0.1 ? 'B' : 'A',
+          chain: {
+            act1: Math.random() > 0.2 ? 'fake_info' : (Math.random() > 0.5 ? 'bullying' : 'copyright'),
+            act2: Math.random() > 0.15 ? 'bullying' : (Math.random() > 0.5 ? 'fake_info' : 'dishonest'),
+            act3: Math.random() > 0.1 ? 'threat' : (Math.random() > 0.5 ? 'bullying' : 'friend_trap')
+          },
+          pledged: isPledged,
+          pledgeTime: isPledged ? '10:15' : null
+        };
+      }
+      localStorage.setItem('p2_ict_data', JSON.stringify(mockDb));
+      updateDashboard();
+      updateStudentUIStatus();
+      showAlert('✅', '數據填入完成', '已成功填入 11 組模擬學生數據！包含情境 1-4、小強故事拆解及全班自律承諾簽署進度。');
+    }
+  </script>
+</body>
+</html>
