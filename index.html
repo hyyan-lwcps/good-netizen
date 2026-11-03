@@ -45,6 +45,17 @@
 </head>
 <body class="min-h-screen flex flex-col text-slate-800">
 
+  <!-- ==================== 🍎 教師觀課預覽模式橫幅 (Teacher Preview Banner) ==================== -->
+  <div id="teacherPreviewBanner" class="hidden bg-rose-600 text-white px-4 py-2 font-bold text-xs sm:text-sm flex items-center justify-between shadow-md sticky top-0 z-50">
+    <div class="flex items-center space-x-2">
+      <span class="text-base">🍎</span>
+      <span>教師預覽模式（不佔用頭像名額，不記錄測試數據）</span>
+    </div>
+    <button onclick="switchMode('teacher')" class="bg-white text-rose-700 hover:bg-rose-50 px-3 py-1 rounded-full font-black text-xs transition active:scale-95 shadow cursor-pointer">
+      返回教師控制台 ➔
+    </button>
+  </div>
+
   <!-- ==================== 頂部導航欄 (Top Header) ==================== -->
   <header class="bg-gradient-to-r from-blue-900 via-indigo-800 to-blue-900 text-white shadow-md sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -74,7 +85,7 @@
     </div>
   </header>
 
-  <!-- ==================== 動物組別選擇 Modal 彈窗 (入口分流) ==================== -->
+  <!-- ==================== 動物組別選擇 Modal 彈窗 (含實時鎖定) ==================== -->
   <div id="groupModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border-4 border-amber-400 text-center badge-pop max-h-[90vh] overflow-y-auto relative">
       
@@ -91,11 +102,11 @@
 
       <div class="text-5xl mb-2">🐾</div>
       <h2 class="text-2xl sm:text-3xl font-black text-slate-800 mb-2">歡迎！請選擇一個你喜歡的動物頭像，點擊即可開始學習！</h2>
-      <p class="text-slate-500 text-sm sm:text-base mb-6">點選你們組別最喜歡的動物，開啟今天的學習挑戰吧！</p>
+      <p class="text-slate-500 text-sm sm:text-base mb-6">點選你們組別最喜歡的動物（已被其他組選擇的動物將自動鎖定）：</p>
       
-      <!-- 16 款動物 Emoji 按鈕網格 -->
+      <!-- 16 款動物 Emoji 按鈕網格 (動態渲染) -->
       <div id="animalGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
-        <!-- 由 JavaScript 動態生成 16 款動物 -->
+        <!-- JS 動態生成 -->
       </div>
 
       <!-- 首頁底部備用直登教師專區連結 -->
@@ -152,7 +163,7 @@
     <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center badge-pop border-4 border-red-500 shadow-2xl">
       <div class="text-5xl mb-2">⚠️</div>
       <h3 class="text-xl font-black text-slate-800 mb-2">確定重置數據？</h3>
-      <p class="text-slate-600 text-sm mb-6">此操作將會清空所有組別的答題數據與簽署紀錄，無法復原。</p>
+      <p class="text-slate-600 text-sm mb-6">此操作將會清空所有組別的答題數據、簽署紀錄與頭像鎖定狀態，無法復原。</p>
       <div class="grid grid-cols-2 gap-3">
         <button onclick="closeConfirmModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 rounded-xl active:scale-95 transition cursor-pointer">取消</button>
         <button onclick="executeResetData()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl shadow active:scale-95 transition cursor-pointer">確定清空</button>
@@ -441,7 +452,6 @@
           <div class="aspect-video bg-slate-100 rounded-xl overflow-hidden flex items-center justify-center border border-dashed border-slate-300 relative shadow-inner shrink-0">
             <img id="comic-panel-1" src="keung_1.jfif" alt="第1格漫畫" class="w-full h-full object-cover">
           </div>
-          <!-- 加大且對齊高對比導讀文字卡 -->
           <div class="flex-1 flex items-center bg-slate-100/90 p-3.5 rounded-xl border border-slate-200 min-h-[110px]">
             <p class="text-base sm:text-xl font-bold text-slate-900 leading-relaxed">
               小明在體育課踢足球時，不小心在踢開球時撞到小強，小強感到非常憤怒。
@@ -454,7 +464,6 @@
           <div class="aspect-video bg-slate-100 rounded-xl overflow-hidden flex items-center justify-center border border-dashed border-slate-300 relative shadow-inner shrink-0">
             <img id="comic-panel-2" src="keung_2.jfif" alt="第2格漫畫" class="w-full h-full object-cover">
           </div>
-          <!-- 加大且對齊高對比導讀文字卡 -->
           <div class="flex-1 flex items-center bg-blue-50 p-3.5 rounded-xl border border-blue-200 min-h-[110px]">
             <p class="text-base sm:text-xl font-bold text-slate-900 leading-relaxed">
               小強回家後，在社交平台發貼文宣稱：<span class="text-blue-700">「小明今天在學校故意踢傷我！大家要小心這個危險人物！」</span>
@@ -467,7 +476,6 @@
           <div class="aspect-video bg-slate-100 rounded-xl overflow-hidden flex items-center justify-center border border-dashed border-slate-300 relative shadow-inner shrink-0">
             <img id="comic-panel-3" src="keung_3.jfif" alt="第3格漫畫" class="w-full h-full object-cover">
           </div>
-          <!-- 加大且對齊高對比導讀文字卡 -->
           <div class="flex-1 flex items-center bg-purple-50 p-3.5 rounded-xl border border-purple-200 min-h-[110px]">
             <p class="text-base sm:text-xl font-bold text-slate-900 leading-relaxed">
               小強將小明的照片合成上暴龍的頭，發到社交平台並寫道：<span class="text-purple-800">「大家以後不要跟他玩，誰跟他玩就是我的敵人！」</span>
@@ -480,7 +488,6 @@
           <div class="aspect-video bg-slate-100 rounded-xl overflow-hidden flex items-center justify-center border border-dashed border-slate-300 relative shadow-inner shrink-0">
             <img id="comic-panel-4" src="keung_4.jfif" alt="第4格漫畫" class="w-full h-full object-cover">
           </div>
-          <!-- 加大且對齊高對比導讀文字卡 -->
           <div class="flex-1 flex items-center bg-red-50 p-3.5 rounded-xl border border-red-200 min-h-[110px]">
             <p class="text-base sm:text-xl font-bold text-slate-900 leading-relaxed">
               小明傳訊息請小強刪帖，小強私訊回覆：<span class="text-red-700">「如果你敢告狀，我就去你家門口堵你，讓你好看！」</span>
@@ -541,7 +548,6 @@
     <!-- ==================== 步驟四：自律承諾牆 ==================== -->
     <section id="student-step-4" class="student-step-panel bg-gradient-to-br from-emerald-500 to-teal-700 rounded-3xl p-6 sm:p-8 text-white shadow-lg text-center space-y-5 hidden">
       <div class="text-5xl">✍️</div>
-      <!-- 已移除「步驟四：」前綴 -->
       <h3 class="text-2xl sm:text-3xl font-black">良好網上公民自律承諾</h3>
       
       <!-- 5 大具體承諾條目卡片 -->
@@ -602,8 +608,8 @@
           <span class="text-2xl">🔒</span>
           <h3 class="text-lg font-black text-amber-300">觀課控班控制台：課堂進度解鎖發佈</h3>
         </div>
-        <button onclick="switchMode('student')" class="bg-slate-700 hover:bg-slate-600 text-xs text-slate-200 px-3 py-1 rounded-full border border-slate-500 cursor-pointer">
-          切換回學生端 View
+        <button onclick="switchToStudentPreview()" class="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs sm:text-sm px-4 py-2 rounded-xl shadow transition active:scale-95 cursor-pointer">
+          👁️ 切換至學生端 (免選頭像預覽)
         </button>
       </div>
 
@@ -639,7 +645,7 @@
           🎲 填入模擬全班數據 (11組)
         </button>
         <button onclick="resetAllData()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs sm:text-sm px-3.5 py-2 rounded-xl transition active:scale-95 cursor-pointer">
-          🔄 重置數據
+          🔄 重置數據與頭像
         </button>
       </div>
     </div>
@@ -712,9 +718,9 @@
 
   </main>
 
-  <!-- ==================== JavaScript 邏輯 ==================== -->
+  <!-- ==================== JavaScript 邏輯 (Firebase + 頭像實時鎖定) ==================== -->
   <script>
-    // Firebase 專案配置 (Realtime Database 實時同步)
+    // Firebase 專案配置
     const firebaseConfig = {
       apiKey: "AIzaSyDPZF0Jx5uDwZdVsyU69JiEPF4F3E2Ld_k",
       authDomain: "good-netizen.firebaseapp.com",
@@ -728,35 +734,35 @@
     let fbDatabase = null;
     let fbDataRef = null;
     let fbStageRef = null;
+    let fbAvatarRef = null;
     let isFirebaseReady = false;
     let cachedFirebaseData = {};
+    let cachedAvatarData = {};
 
-    // 初始化 Firebase 連線
-    try {
-      if (typeof firebase !== 'undefined') {
-        firebase.initializeApp(firebaseConfig);
-        fbDatabase = firebase.database();
-        fbDataRef = fbDatabase.ref('p2_ict_data');
-        fbStageRef = fbDatabase.ref('p2_ict_unlock_stage');
-        isFirebaseReady = true;
+    // 生成或取得當前裝置唯一識別碼
+    function getDeviceId() {
+      let devId = safeGetStorage('p2_device_id', null);
+      if (!devId) {
+        devId = 'dev_' + Math.random().toString(36).substring(2, 10);
+        safeSetStorage('p2_device_id', devId);
       }
-    } catch (err) {
-      console.warn("Firebase 初始化失敗，降級使用 LocalStorage:", err);
-      isFirebaseReady = false;
+      return devId;
     }
+    const myDeviceId = getDeviceId();
 
+    // 16 款標準動物組別
     const ANIMALS = [
-      { id: 1, name: "樹熊組", emoji: "🐨" },
-      { id: 2, name: "獅子組", emoji: "🦁" },
-      { id: 3, name: "老虎組", emoji: "🐯" },
-      { id: 4, name: "熊貓組", emoji: "🐼" },
-      { id: 5, name: "狐狸組", emoji: "🦊" },
-      { id: 6, name: "小狗組", emoji: "🐶" },
-      { id: 7, name: "小貓組", emoji: "🐱" },
-      { id: 8, name: "兔仔組", emoji: "🐰" },
-      { id: 9, name: "大熊組", emoji: "🐻" },
-      { id: 10, name: "青蛙組", emoji: "🐸" },
-      { id: 11, name: "猴子組", emoji: "🐵" },
+      { id: 1, name: "獅子組", emoji: "🦁" },
+      { id: 2, name: "熊貓組", emoji: "🐼" },
+      { id: 3, name: "兔仔組", emoji: "🐰" },
+      { id: 4, name: "小狗組", emoji: "🐶" },
+      { id: 5, name: "小貓組", emoji: "🐱" },
+      { id: 6, name: "樹熊組", emoji: "🐨" },
+      { id: 7, name: "狐狸組", emoji: "🦊" },
+      { id: 8, name: "猴子組", emoji: "🐵" },
+      { id: 9, name: "老虎組", emoji: "🐯" },
+      { id: 10, name: "大熊組", emoji: "🐻" },
+      { id: 11, name: "青蛙組", emoji: "🐸" },
       { id: 12, name: "企鵝組", emoji: "🐧" },
       { id: 13, name: "獨角獸", emoji: "🦄" },
       { id: 14, name: "大象組", emoji: "🐘" },
@@ -776,25 +782,25 @@
     const LAW_INFO = {
       unit1: {
         title: "⚖️ 情境 1 法律警示：網絡欺凌與私隱",
-        legalText: "未經同意披露他人個人資料，最高可判罰款一百萬元及監禁五年",
+        legalText: "未經同意披露他人個人資料，最高可判罰款一百萬元及監禁五年。",
         caseSummary: "被告 XXX 懷疑假冒他人身份，為受害人開設社交網站帳戶，並將受害人的近照移花接木，製作合成照，激發網民熱議和恥笑。他又將受害人的個人資料放上社交網站，令到受害人飽受滋擾。警方接獲舉報後將他拘捕。",
         teacherPrompt: "未經同學同意把惡搞照片發到網上或公開他人個人資料，這不只是玩笑，而是觸犯私隱條例！"
       },
       unit2: {
         title: "⚖️ 情境 2 法律警示：網上勒索",
-        legalText: "任何人經證實觸犯勒索罪，最高可判監十四年",
+        legalText: "任何人經證實觸犯勒索罪，最高可判監十四年。",
         caseSummary: "被告 XXX 在網上假扮成女醫生，受害人誤以為真，將自己的裸照傳送給被告用作診症用途。後來，被告利用裸照勒索受害人，並威脅受害人如不繳交款項便公開照片。受害人在友人陪同下報警求助，警方將被告拘捕。",
         teacherPrompt: "在網上脅迫他人或進行勒索屬於嚴重罪行，切勿隨便相信陌生人或參與違法要求！"
       },
       unit3: {
         title: "⚖️ 情境 3 法律警示：發放虛假訊息",
-        legalText: "任何人如透過互聯網發放惡意虛假訊息，有可能干犯有犯罪或不誠實意圖而取用電腦之罪名，最高可被判處監禁五年",
+        legalText: "任何人如透過互聯網發放惡意虛假訊息，有可能干犯有犯罪或不誠實意圖而取用電腦之罪名，最高可被判處監禁五年。",
         caseSummary: "被告 XXX 在網上討論區發佈虛假訊息，訛稱某間銀行即將出現擠提，呼籲公眾到銀行提取存款。謠言隨即散播，引起公眾恐慌。警方追查後，上門將涉案被告拘捕。",
         teacherPrompt: "未經證實隨手轉發謠言會引起公眾恐慌，按下發送前一定要先向家長或老師查證！"
       },
       unit4: {
         title: "⚖️ 情境 4 法律警示：刑事恐嚇",
-        legalText: "任何人經證實觸犯刑事恐嚇，最高可判監五年",
+        legalText: "任何人經證實觸犯刑事恐嚇，最高可判監五年。",
         caseSummary: "被告 XXX 懷疑不滿某位專欄作者的言論，公然在社交網站留言要取她的性命，還指作者全家應當滅門，恐嚇會傷害她和她的家人的身體。警方跟進並調查後，將被告拘捕。",
         teacherPrompt: "發佈『不送禮物就把你鎖進儲物櫃』這類威脅言論已構成恐嚇罪，網絡絕非法外之地！"
       }
@@ -804,13 +810,25 @@
     let activeTab = 'unit1';
     let chartInstance = null;
     let currentUnlockStage = 1;
+    let isTeacherPreviewMode = false;
     let chainSelectedOptions = { act1: null, act2: null, act3: null };
 
-    // 本地與網絡雙重存取保護
-    function safeGetStorage(key, defaultVal = {}) {
-      if (isFirebaseReady && key === 'p2_ict_data' && Object.keys(cachedFirebaseData).length > 0) {
-        return cachedFirebaseData;
+    // 初始化 Firebase 連線
+    try {
+      if (typeof firebase !== 'undefined') {
+        firebase.initializeApp(firebaseConfig);
+        fbDatabase = firebase.database();
+        fbDataRef = fbDatabase.ref('p2_ict_data');
+        fbStageRef = fbDatabase.ref('p2_ict_unlock_stage');
+        fbAvatarRef = fbDatabase.ref('p2_ict_avatars');
+        isFirebaseReady = true;
       }
+    } catch (err) {
+      console.warn("Firebase 初始化失敗，降級使用 LocalStorage:", err);
+      isFirebaseReady = false;
+    }
+
+    function safeGetStorage(key, defaultVal = null) {
       try {
         const val = localStorage.getItem(key);
         return val ? JSON.parse(val) : defaultVal;
@@ -828,20 +846,15 @@
       }
     }
 
-    // 數據同步至 Firebase
     function syncToFirebase(path, data) {
-      safeSetStorage(path === 'p2_ict_unlock_stage' ? 'p2_ict_unlock_stage' : 'p2_ict_data', data);
       if (isFirebaseReady) {
-        if (path === 'p2_ict_unlock_stage') {
-          fbStageRef.set(data);
-        } else {
-          fbDataRef.set(data);
-        }
+        if (path === 'p2_ict_unlock_stage') fbStageRef.set(data);
+        else if (path === 'p2_ict_avatars') fbAvatarRef.set(data);
+        else fbDataRef.set(data);
       }
     }
 
     window.onload = function() {
-      initAnimalGrid();
       initChainChoiceGrids();
 
       const urlParams = new URLSearchParams(window.location.search);
@@ -851,12 +864,11 @@
         loadSavedGroup();
       }
 
-      // 監聽 Firebase 實時數據更新 (跨裝置同步)
+      // 監聽 Firebase 數據實時變更
       if (isFirebaseReady) {
         fbDataRef.on('value', (snapshot) => {
-          const data = snapshot.val() || {};
-          cachedFirebaseData = data;
-          safeSetStorage('p2_ict_data', data);
+          cachedFirebaseData = snapshot.val() || {};
+          safeSetStorage('p2_ict_data', cachedFirebaseData);
           updateDashboard();
           updateStudentUIStatus();
         });
@@ -865,35 +877,58 @@
           const stage = snapshot.val() || 1;
           applyUnlockStageUI(parseInt(stage));
         });
+
+        fbAvatarRef.on('value', (snapshot) => {
+          cachedAvatarData = snapshot.val() || {};
+          renderAnimalGrid();
+        });
       } else {
+        renderAnimalGrid();
         const savedStage = parseInt(safeGetStorage('p2_ict_unlock_stage', 1));
         applyUnlockStageUI(savedStage);
         updateDashboard();
       }
-
-      window.addEventListener('storage', function(e) {
-        if (e.key === 'p2_ict_data') {
-          updateDashboard();
-          updateStudentUIStatus();
-        }
-        if (e.key === 'p2_ict_unlock_stage') {
-          const newStage = parseInt(e.newValue || '1');
-          applyUnlockStageUI(newStage);
-        }
-      });
     };
 
-    function initAnimalGrid() {
+    // 渲染頭像選擇視窗，實現「頭像實時鎖定」
+    function renderAnimalGrid() {
       const grid = document.getElementById('animalGrid');
+      if (!grid) return;
       grid.innerHTML = '';
+
+      const avatars = isFirebaseReady ? cachedAvatarData : safeGetStorage('p2_ict_avatars', {});
+
       ANIMALS.forEach(animal => {
+        const occupied = avatars[animal.id];
+        const isOccupiedByOther = occupied && occupied.claimedBy !== myDeviceId;
+        const isOccupiedByMe = occupied && occupied.claimedBy === myDeviceId;
+
         const btn = document.createElement('button');
-        btn.className = 'bg-slate-50 hover:bg-amber-100 border-2 border-slate-200 hover:border-amber-400 p-3.5 rounded-2xl flex flex-col items-center justify-center transition active:scale-95 space-y-1 cursor-pointer';
-        btn.onclick = () => selectGroup(animal);
-        btn.innerHTML = `
-          <span class="text-3xl sm:text-4xl">${animal.emoji}</span>
-          <span class="font-bold text-slate-800 text-xs sm:text-sm">${animal.name}</span>
-        `;
+        
+        if (isOccupiedByOther) {
+          btn.className = 'bg-slate-100 border-2 border-slate-200 p-3.5 rounded-2xl flex flex-col items-center justify-center cursor-not-allowed opacity-50 relative space-y-1';
+          btn.disabled = true;
+          btn.innerHTML = `
+            <span class="text-3xl sm:text-4xl grayscale">${animal.emoji}</span>
+            <span class="font-bold text-slate-500 text-xs">${animal.name}</span>
+            <span class="text-[10px] bg-slate-300 text-slate-700 font-black px-2 py-0.5 rounded-full mt-1">已被選擇</span>
+          `;
+        } else if (isOccupiedByMe) {
+          btn.className = 'bg-amber-100 border-4 border-amber-500 p-3.5 rounded-2xl flex flex-col items-center justify-center transition active:scale-95 space-y-1 shadow-md cursor-pointer';
+          btn.onclick = () => selectGroup(animal);
+          btn.innerHTML = `
+            <span class="text-3xl sm:text-4xl">${animal.emoji}</span>
+            <span class="font-black text-amber-900 text-xs sm:text-sm">${animal.name}</span>
+            <span class="text-[10px] bg-amber-500 text-white font-black px-2 py-0.5 rounded-full mt-1">我的組別</span>
+          `;
+        } else {
+          btn.className = 'bg-slate-50 hover:bg-amber-100 border-2 border-slate-200 hover:border-amber-400 p-3.5 rounded-2xl flex flex-col items-center justify-center transition active:scale-95 space-y-1 cursor-pointer';
+          btn.onclick = () => selectGroup(animal);
+          btn.innerHTML = `
+            <span class="text-3xl sm:text-4xl">${animal.emoji}</span>
+            <span class="font-bold text-slate-800 text-xs sm:text-sm">${animal.name}</span>
+          `;
+        }
         grid.appendChild(btn);
       });
     }
@@ -901,6 +936,7 @@
     function initChainChoiceGrids() {
       [1, 2, 3].forEach(actNum => {
         const container = document.getElementById(`grid-act-${actNum}`);
+        if (!container) return;
         container.innerHTML = '';
         BEHAVIOR_OPTIONS.forEach(opt => {
           const btn = document.createElement('button');
@@ -919,7 +955,6 @@
 
     function selectChainOption(actNum, optKey) {
       chainSelectedOptions[`act${actNum}`] = optKey;
-      
       BEHAVIOR_OPTIONS.forEach(opt => {
         const btn = document.getElementById(`opt-btn-act${actNum}-${opt.key}`);
         if (opt.key === optKey) {
@@ -931,9 +966,17 @@
     }
 
     function selectGroup(animal) {
+      isTeacherPreviewMode = false;
+      document.getElementById('teacherPreviewBanner').classList.add('hidden');
+
       currentGroup = animal;
       safeSetStorage('p2_ict_current_group', animal);
-      
+
+      // 寫入 Firebase 頭像鎖定表記錄
+      let avatars = isFirebaseReady ? cachedAvatarData : safeGetStorage('p2_ict_avatars', {});
+      avatars[animal.id] = { claimedBy: myDeviceId, animalName: animal.name };
+      syncToFirebase('p2_ict_avatars', avatars);
+
       document.getElementById('currentGroupEmoji').innerText = animal.emoji;
       document.getElementById('currentGroupName').innerText = animal.name;
       document.getElementById('welcomeGroupName').innerText = `${animal.emoji} ${animal.name}`;
@@ -955,12 +998,27 @@
     }
 
     function openGroupModal() {
+      renderAnimalGrid();
       document.getElementById('groupModal').classList.remove('hidden');
       document.getElementById('groupModal').classList.add('modal-active');
     }
 
+    function switchToStudentPreview() {
+      isTeacherPreviewMode = true;
+      document.getElementById('teacherPreviewBanner').classList.remove('hidden');
+      document.getElementById('groupModal').classList.remove('modal-active');
+      document.getElementById('groupModal').classList.add('hidden');
+      
+      document.getElementById('currentGroupEmoji').innerText = '🍎';
+      document.getElementById('currentGroupName').innerText = '教師預覽';
+      document.getElementById('welcomeGroupName').innerText = '🍎 教師觀課預覽';
+
+      switchMode('student');
+    }
+
     function switchMode(mode) {
       if (mode === 'teacher') {
+        document.getElementById('teacherPreviewBanner').classList.add('hidden');
         document.getElementById('studentView').classList.add('hidden');
         document.getElementById('teacherView').classList.remove('hidden');
         updateDashboard();
@@ -994,12 +1052,8 @@
         const btn = document.getElementById(`sub-sc-${i}`);
         if (i === scNum) {
           btn.className = "scenario-sub-tab p-4 rounded-2xl font-black text-base sm:text-lg bg-blue-600 text-white shadow-md border-2 border-blue-600 flex flex-col items-center justify-center space-y-1 transition active:scale-95 cursor-pointer";
-          btn.querySelector('span:first-child').className = "text-xs font-bold text-blue-100 uppercase tracking-wider";
-          btn.querySelector('span:nth-child(3)').className = "text-xs font-normal opacity-90";
         } else {
           btn.className = "scenario-sub-tab p-4 rounded-2xl font-black text-base sm:text-lg bg-slate-50 text-slate-700 hover:bg-slate-100 border-2 border-slate-200 flex flex-col items-center justify-center space-y-1 transition active:scale-95 cursor-pointer";
-          btn.querySelector('span:first-child').className = "text-xs font-bold text-slate-400 uppercase tracking-wider";
-          btn.querySelector('span:nth-child(3)').className = "text-xs font-normal text-slate-500";
         }
       });
     }
@@ -1080,22 +1134,38 @@
     }
 
     function submitAnswer(unitKey, choice) {
+      if (isTeacherPreviewMode) {
+        if (choice === 'A' && LAW_INFO[unitKey]) {
+          document.getElementById('lawModalTitle').innerText = LAW_INFO[unitKey].title;
+          document.getElementById('lawModalContent').innerHTML = `
+            <div class="p-2 space-y-2 text-center">
+              <p class="text-lg sm:text-xl font-black text-red-700 leading-relaxed">
+                「${LAW_INFO[unitKey].legalText}」
+              </p>
+            </div>
+          `;
+          document.getElementById('lawModal').classList.remove('hidden');
+          document.getElementById('lawModal').classList.add('modal-active');
+        } else {
+          showAlert('✅', '預覽模式響應', '選擇正確！（此為教師預覽模式，不會寫入全班統計）');
+        }
+        return;
+      }
+
       if (!currentGroup) {
         showAlert('⚠️', '請選擇組別', '請先選擇你們的動物組別！');
         openGroupModal();
         return;
       }
 
-      let db = safeGetStorage('p2_ict_data', {});
+      let db = isFirebaseReady ? cachedFirebaseData : safeGetStorage('p2_ict_data', {});
       if (!db[currentGroup.id]) {
         db[currentGroup.id] = { animal: currentGroup };
       }
       db[currentGroup.id][unitKey] = choice;
 
       syncToFirebase('p2_ict_data', db);
-
       updateStudentUIStatus();
-      updateDashboard();
 
       if (choice === 'A' && LAW_INFO[unitKey]) {
         document.getElementById('lawModalTitle').innerText = LAW_INFO[unitKey].title;
@@ -1119,6 +1189,11 @@
     }
 
     function submitChainChallenge() {
+      if (isTeacherPreviewMode) {
+        showAlert('🎯', '預覽模式響應', '小強故事大挑戰答案測試成功！（此為教師預覽模式，不寫入全班數據）');
+        return;
+      }
+
       if (!currentGroup) {
         showAlert('⚠️', '請選擇組別', '請先選擇你們的動物組別！');
         openGroupModal();
@@ -1130,28 +1205,31 @@
         return;
       }
 
-      let db = safeGetStorage('p2_ict_data', {});
+      let db = isFirebaseReady ? cachedFirebaseData : safeGetStorage('p2_ict_data', {});
       if (!db[currentGroup.id]) {
         db[currentGroup.id] = { animal: currentGroup };
       }
 
       db[currentGroup.id]['chain'] = { ...chainSelectedOptions };
       syncToFirebase('p2_ict_data', db);
-
       updateStudentUIStatus();
-      updateDashboard();
 
       showAlert('🎯', '提交成功', '小強故事大挑戰答案已成功提交！老師正在大螢幕為全班作數據診斷。');
     }
 
     function submitPledge() {
+      if (isTeacherPreviewMode) {
+        showAlert('🎉', '預覽簽署測試', '感謝您於預覽模式進行簽署測試！');
+        return;
+      }
+
       if (!currentGroup) {
         showAlert('⚠️', '請選擇組別', '請先選擇你們的動物組別！');
         openGroupModal();
         return;
       }
 
-      let db = safeGetStorage('p2_ict_data', {});
+      let db = isFirebaseReady ? cachedFirebaseData : safeGetStorage('p2_ict_data', {});
       if (!db[currentGroup.id]) {
         db[currentGroup.id] = { animal: currentGroup };
       }
@@ -1162,9 +1240,7 @@
       db[currentGroup.id]['pledged'] = true;
       db[currentGroup.id]['pledgeTime'] = timeStr;
       syncToFirebase('p2_ict_data', db);
-
       updateStudentUIStatus();
-      updateDashboard();
     }
 
     function showAlert(icon, title, body) {
@@ -1191,10 +1267,17 @@
     }
 
     function executeResetData() {
-      localStorage.removeItem('p2_ict_data');
+      try {
+        localStorage.removeItem('p2_ict_data');
+        localStorage.removeItem('p2_ict_avatars');
+      } catch (e) {}
+
       cachedFirebaseData = {};
+      cachedAvatarData = {};
+
       if (isFirebaseReady) {
         fbDataRef.remove();
+        fbAvatarRef.remove();
         fbStageRef.set(1);
       }
 
@@ -1210,14 +1293,15 @@
         });
       });
 
+      renderAnimalGrid();
       updateStudentUIStatus();
       updateDashboard();
-      showAlert('🗑️', '數據已重置', '全班答題與簽署數據已成功清空！');
+      showAlert('🗑️', '數據已重置', '全班答題數據與頭像鎖定紀錄已成功清空！');
     }
 
     function updateStudentUIStatus() {
-      if (!currentGroup) return;
-      const db = safeGetStorage('p2_ict_data', {});
+      if (!currentGroup || isTeacherPreviewMode) return;
+      const db = isFirebaseReady ? cachedFirebaseData : safeGetStorage('p2_ict_data', {});
       const groupData = db[currentGroup.id] || {};
 
       ['unit1', 'unit2', 'unit3', 'unit4'].forEach(u => {
@@ -1336,13 +1420,14 @@
     }
 
     function updateDashboard() {
-      const db = safeGetStorage('p2_ict_data', {});
+      const db = isFirebaseReady ? cachedFirebaseData : safeGetStorage('p2_ict_data', {});
       const groupIds = Object.keys(db);
       document.getElementById('responseCountBadge').innerText = `已收到 ${groupIds.length} 組數據`;
 
       updatePledgeWall(db, groupIds);
 
       const detailsContainer = document.getElementById('dashboardDetails');
+      if (!detailsContainer) return;
       detailsContainer.innerHTML = '';
 
       if (activeTab.startsWith('unit')) {
@@ -1407,9 +1492,9 @@
         document.getElementById('chartTitle').innerText = `小強故事大挑戰：3 個行動正確率統計`;
 
         const actionDefs = [
-          { key: 'act1', name: '行動 ①：發帖誣衊故意踢傷', correctKey: 'fake_info', correctLabel: '發佈虛假訊息', color: 'blue' },
-          { key: 'act2', name: '行動 ②：暴龍改圖呼籲排擠', correctKey: 'bullying', correctLabel: '網絡欺凌', color: 'purple' },
-          { key: 'act3', name: '行動 ③：私訊威脅門口堵人', correctKey: 'threat', correctLabel: '發佈恐嚇言論', color: 'red' }
+          { key: 'act1', name: '行動 ①：發帖誣衊故意踢傷', correctKey: 'fake_info', correctLabel: '發佈虛假訊息' },
+          { key: 'act2', name: '行動 ②：暴龍改圖呼籲排擠', correctKey: 'bullying', correctLabel: '網絡欺凌' },
+          { key: 'act3', name: '行動 ③：私訊威脅門口堵人', correctKey: 'threat', correctLabel: '發佈恐嚇言論' }
         ];
 
         let actionAccuracies = [];
@@ -1502,7 +1587,9 @@
     }
 
     function renderPieChart(labels, data) {
-      const ctx = document.getElementById('dashboardChart').getContext('2d');
+      const canvas = document.getElementById('dashboardChart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
       if (chartInstance) chartInstance.destroy();
 
       chartInstance = new Chart(ctx, {
@@ -1530,7 +1617,9 @@
     }
 
     function renderBarChart(labels, data) {
-      const ctx = document.getElementById('dashboardChart').getContext('2d');
+      const canvas = document.getElementById('dashboardChart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
       if (chartInstance) chartInstance.destroy();
 
       chartInstance = new Chart(ctx, {
@@ -1563,6 +1652,8 @@
 
     function fillMockData() {
       let mockDb = {};
+      let mockAvatars = {};
+
       for (let i = 0; i < 11; i++) {
         const animal = ANIMALS[i];
         const isPledged = Math.random() > 0.2;
@@ -1580,11 +1671,16 @@
           pledged: isPledged,
           pledgeTime: isPledged ? '10:15' : null
         };
+        mockAvatars[animal.id] = { claimedBy: `mock_dev_${i}`, animalName: animal.name };
       }
+
       syncToFirebase('p2_ict_data', mockDb);
+      syncToFirebase('p2_ict_avatars', mockAvatars);
+
       updateDashboard();
       updateStudentUIStatus();
-      showAlert('✅', '數據填入完成', '已成功填入 11 組模擬學生數據！包含情境 1-4、小強故事拆解及全班自律承諾簽署進度。');
+      renderAnimalGrid();
+      showAlert('✅', '模擬數據填入完成', '已成功填入 11 組模擬全班學生作答數據與頭像鎖定紀錄！');
     }
   </script>
 </body>
