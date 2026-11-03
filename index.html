@@ -601,7 +601,7 @@
   <!-- ==================== 2. 教師實時數據儀表板 (Teacher Dashboard) ==================== -->
   <main id="teacherView" class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6 hidden">
     
-    <!-- 🔒 課堂進度同步解鎖控制台 -->
+    <!-- 🔒 課堂進度同步解鎖控制台 (優化解鎖狀態標籤) -->
     <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-5 rounded-3xl shadow-xl border-2 border-indigo-500/30 space-y-3">
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-2">
@@ -613,21 +613,22 @@
         </button>
       </div>
 
+      <!-- 動態標籤與圖示更新按鈕 -->
       <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1">
-        <button onclick="teacherSetUnlockStage(1)" id="btn-stage-1" class="stage-btn py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm bg-amber-400 text-slate-900 shadow cursor-pointer">
-          📍 情境 1 (開放)
+        <button onclick="teacherSetUnlockStage(1)" id="btn-stage-1" class="stage-btn py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm cursor-pointer transition">
+          ✅ 正在開放：情境 1
         </button>
-        <button onclick="teacherSetUnlockStage(2)" id="btn-stage-2" class="stage-btn py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 cursor-pointer">
-          🔓 解鎖情境 2
+        <button onclick="teacherSetUnlockStage(2)" id="btn-stage-2" class="stage-btn py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm cursor-pointer transition">
+          🔒 點擊開放：情境 2
         </button>
-        <button onclick="teacherSetUnlockStage(3)" id="btn-stage-3" class="stage-btn py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 cursor-pointer">
-          🔓 解鎖情境 3
+        <button onclick="teacherSetUnlockStage(3)" id="btn-stage-3" class="stage-btn py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm cursor-pointer transition">
+          🔒 點擊開放：情境 3
         </button>
-        <button onclick="teacherSetUnlockStage(4)" id="btn-stage-4" class="stage-btn py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 cursor-pointer">
-          🔓 解鎖情境 4
+        <button onclick="teacherSetUnlockStage(4)" id="btn-stage-4" class="stage-btn py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm cursor-pointer transition">
+          🔒 點擊開放：情境 4
         </button>
-        <button onclick="teacherSetUnlockStage(5)" id="btn-stage-5" class="stage-btn py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 cursor-pointer">
-          🔓 解鎖小強故事
+        <button onclick="teacherSetUnlockStage(5)" id="btn-stage-5" class="stage-btn py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm cursor-pointer transition">
+          🔒 點擊開放：小強故事
         </button>
       </div>
     </div>
@@ -1109,18 +1110,35 @@
       showAlert('🔓', '進度已發佈', `成功解鎖至【${stageNames[stage]}】！全班學生端已即時同步解鎖。`);
     }
 
+    // 💡 動態更新控班按鈕狀態與視覺標籤
     function applyUnlockStageUI(stage) {
       currentUnlockStage = stage;
-      for (let i = 1; i <= 5; i++) {
-        const btn = document.getElementById(`btn-stage-${i}`);
+      const stageDefs = [
+        { id: 1, name: '情境 1' },
+        { id: 2, name: '情境 2' },
+        { id: 3, name: '情境 3' },
+        { id: 4, name: '情境 4' },
+        { id: 5, name: '小強故事' }
+      ];
+
+      stageDefs.forEach(s => {
+        const btn = document.getElementById(`btn-stage-${s.id}`);
         if (btn) {
-          if (i === stage) {
-            btn.className = "stage-btn py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm bg-amber-400 text-slate-900 shadow cursor-pointer";
+          if (s.id === stage) {
+            // 當前最高解鎖（高亮指示）
+            btn.className = "stage-btn py-2.5 px-3 rounded-xl font-black text-xs sm:text-sm bg-amber-400 text-slate-950 shadow-lg border-2 border-amber-200 cursor-pointer transition transform active:scale-95";
+            btn.innerHTML = `✅ 正在開放：${s.name}`;
+          } else if (s.id < stage) {
+            // 已解鎖開放
+            btn.className = "stage-btn py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm bg-emerald-600 text-white hover:bg-emerald-500 cursor-pointer transition";
+            btn.innerHTML = `🔓 已開放：${s.name}`;
           } else {
-            btn.className = "stage-btn py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 cursor-pointer";
+            // 未解鎖（需點擊解鎖）
+            btn.className = "stage-btn py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 cursor-pointer transition";
+            btn.innerHTML = `🔒 點擊開放：${s.name}`;
           }
         }
-      }
+      });
 
       const lockOverlaySc2 = document.getElementById('lock-overlay-scenario-2');
       const lockOverlaySc3 = document.getElementById('lock-overlay-scenario-3');
